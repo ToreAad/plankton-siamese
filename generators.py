@@ -1,5 +1,8 @@
 import os
 import random
+from PIL import Image
+import numpy as np
+
 import config as C
 
 
@@ -27,8 +30,6 @@ def mk_triplets(directory):
         # print('Selection:',anchor,pos,neg)
         yield (pos_class,neg_class,anchor,pos,neg)
 
-from PIL import Image
-import numpy as np
 
 # Scale to image size, paste on white background
 def paste(img):
@@ -70,9 +71,10 @@ def triplet_generator(batch_size,cache_size,directory):
         yield [a,p,n], y
 
 # Testing:
-print("### Testing triplet_generator ###")
-g = triplet_generator(4, None, C.train_dir)
-for x in range(0,4):
-    [a,p,n], y = next(g)
-    print(x, "a:", a.shape, "p:", p.shape, "n:", n.shape, "y:", y.shape)
-    
+if __name__ == "__main__":
+    print("### Testing triplet_generator ###")
+    g = triplet_generator(4, None, C.train_dir)
+    for x in range(0,4):
+        [a,p,n], y = next(g)
+        print(x, "a:", a.shape, "p:", p.shape, "n:", n.shape, "y:", y.shape)
+        
