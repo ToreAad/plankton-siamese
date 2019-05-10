@@ -14,15 +14,19 @@ import config as C
 
 last = C.last
 
+
 def save_name(i):
     return ('models/epoch_'+str(i)+'.model')
+
 
 def log(s):
     with open(C.logfile, 'a') as f:
         print(s, file=f)
 
+
 # Use log to file
 logger = CSVLogger(C.logfile, append=True, separator='\t')
+
 
 def train_step():
     model.fit_generator(
@@ -30,7 +34,8 @@ def train_step():
         callbacks=[logger],
         validation_data=triplet_generator(C.batch_size, None, C.val_dir), validation_steps=100)
 
-if last==0:
+
+if last == 0:
     log('Creating base network from scratch.')
     if not os.path.exists('models'):
         os.makedirs('models')
@@ -43,8 +48,10 @@ model = tripletize(base_model)
 model.compile(optimizer=SGD(lr=C.learn_rate, momentum=0.9),
               loss=std_triplet_loss())
 
+
 def avg(x):
     return sum(x)/len(x)
+
 
 vs = T.get_vectors(base_model, C.val_dir)
 cents = {}
@@ -70,7 +77,7 @@ for i in range(last+1, last+11):
         c_tmp[v] = T.centroid(vs[v])
         r_tmp[v] = T.radius(c_tmp[v], vs[v])
     c_rad = [round(100*r_tmp[v])/100 for v in vs]
-    c_mv = [round(100*T.dist(c_tmp[v],cents[v]))/100 for v in vs]
+    c_mv = [round(100*T.dist(c_tmp[v], cents[v]))/100 for v in vs]
     log('Centroid radius: '+str(c_rad))
     log('Centroid moved: '+str(c_mv))
     cents = c_tmp
