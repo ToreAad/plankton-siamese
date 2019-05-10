@@ -1,10 +1,10 @@
-import config as C
-
 from PIL import Image
 import numpy as np
 import sys
 
 from generators import paste
+import config as C
+
 
 def class_file(model, fname):
     img = np.array(Image.open(fname))/256
