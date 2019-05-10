@@ -1,15 +1,14 @@
 # The imported generators expect to find training data in data/train
 # and validation data in data/validation
+import os
+
 from keras.models import load_model
 from keras.callbacks import CSVLogger
 from keras.optimizers import SGD
 
-import os
-
 from create_model import create_base_network, in_dim, tripletize, std_triplet_loss
 from generators import triplet_generator
 import testing as T
-
 import config as C
 
 last = C.last
