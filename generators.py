@@ -7,7 +7,6 @@ import config as C
 
 
 def mk_triplets(directory):
-
     classes = os.listdir(directory)
     images = [os.listdir(os.path.join(directory,x)) for x in classes]
 
@@ -31,6 +30,7 @@ def mk_triplets(directory):
         yield (pos_class,neg_class,anchor,pos,neg)
 
 
+
 # Scale to image size, paste on white background
 def paste(img):
     i = np.ones((299,299,3))
@@ -44,7 +44,7 @@ def paste(img):
     i[start_x:end_x,start_y:end_y,0] = img
     return i
 
-def triplet_generator(batch_size,cache_size,directory):
+def triplet_generator(batch_size, cache_size, directory):
     trips = mk_triplets(directory)
     while True:
         ys = []
@@ -69,6 +69,30 @@ def triplet_generator(batch_size,cache_size,directory):
         y = np.asarray(ys)
 
         yield [a,p,n], y
+
+def mk_singlets(directory):
+    classes = os.listdir(directory)
+    images = [os.listdir(os.path.join(directory,x)) for x in classes]
+
+    while True:
+        label = random.randint(0, len(classes)-1)
+        image_path = os.path.join(directory, classes[label], random.choice(images[label]))
+        yield (image_path, label)
+        
+def singlet_generator(batch_size, directory):
+    trips = mk_singlets(directory)
+
+    while True:
+        images = []
+        labels = []
+        for i in range(0,batch_size):
+            image_path, label = next(trips)
+            labels.append(label)
+            image = np.array(Image.open(image_path))/256
+            images.append(image)
+        X = np.asarray(images)
+        y = np.asarray(labels)
+        yield X, y
 
 # Testing:
 if __name__ == "__main__":
