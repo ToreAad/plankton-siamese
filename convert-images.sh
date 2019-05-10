@@ -21,8 +21,8 @@ convert_dir(){
     export DIR=$1
     mkdir -p "$OUT/$DIR"
     echo "Converting from " "$DIR"
-    parallel convert_file ::: $(ls -1 "$CWD/$BASE/$1" | head)
+    parallel convert_file ::: $(ls -1 "$CWD/$BASE/$1")
 }
 export -f convert_dir
 echo "Starting parallel convert_dir"
-parallel convert_dir ::: $(ls -1 $BASE | head)
+parallel convert_dir ::: $(ls -1 $BASE)
