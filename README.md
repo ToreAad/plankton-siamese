@@ -4,6 +4,7 @@
 
    pip install keras
    pip install tensorflow=1.5 (our CPU doesn't support AVX instructions)
+   sudo apt-get install imagemagick
 
 1. Use imagemagick to rescale all images. Images smaller than 299x299
 are centered on a white background, larger images are scaled down to
