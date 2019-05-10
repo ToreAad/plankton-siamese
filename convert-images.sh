@@ -9,7 +9,7 @@ shopt -s failglob
 BASE=./ZooScanSet/imgs
 OUT=./data
 
-ls "$BASE" | tail -n +14 | while read dir; do
+ls "$BASE" | while read dir; do
    echo "$dir"
    mkdir -p "$OUT/$dir"
    ls "$BASE/$dir" | while read f; do 
