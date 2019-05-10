@@ -20,24 +20,6 @@ def create_base_network(input_dim):
     return Model(inputs=base_model.input, outputs=bitvector)
 
 
-def create_sphere_network(input_dim):
-    base_model = InceptionV3(weights='imagenet', include_top=False, input_shape=input_dim)
-    tmp = GlobalAveragePooling2D()(base_model.output)
-    bitvector = Dense(out_dim, activation='linear')(tmp)
-    outvector = Lambda(lambda t: K.l2_normalize(1000*t, axis=1))(bitvector)
-    return Model(inputs=base_model.input, outputs=outvector)
-
-    
-# This is just for testing - Inception takes forever to set up in Tensorflow
-def create_trivial():
-    base_model = Sequential()
-    base_model.add(Dense(256, input_dim = 1024))
-    base_model.add(Activation('relu'))
-    base_model.add(Dense(out_dim))
-    base_model.add(Activation('sigmoid'))
-    return base_model
-
-
 def tripletize(bmodel):
     anc_in = Input(shape=in_dim)
     pos_in = Input(shape=in_dim)
@@ -62,36 +44,6 @@ def std_triplet_loss(alpha=5):
         neg_dist = K.sum(K.square(anchor-neg),axis=1)
         basic_loss = pos_dist - neg_dist + alpha
         loss = K.maximum(basic_loss,0.0)
-        return loss
-
-    return myloss
-
-# in retrospect, this has some problems, namely that the derivative of 1/x
-# goes quickly (quadratically) to zero as x increases.
-# I.e. the gradient disappears, and we get very slow learning.
-def geom_triplet_loss(alpha=5):
-    def myloss(y_true, y_pred):
-        anchor = y_pred[:,0:out_dim]
-        pos = y_pred[:,out_dim:out_dim*2]
-        neg = y_pred[:,out_dim*2:out_dim*3]
-        pos_dist = K.sum(K.square(anchor-pos),axis=1)
-        neg_dist = K.sum(K.square(anchor-neg),axis=1)
-        basic_loss = pos_dist + alpha/neg_dist
-        loss = K.maximum(basic_loss,0.0)  # should never happen
-        return loss
-
-    return myloss
-
-# By placing the maximum on the loss for negative (and not the total)
-# we may still learn to pack clusters after they are acceptably separated.
-def alt_triplet_loss(alpha=5):
-    def myloss(y_true, y_pred):
-        anchor = y_pred[:,0:out_dim]
-        pos = y_pred[:,out_dim:out_dim*2]
-        neg = y_pred[:,out_dim*2:out_dim*3]
-        pos_dist = K.sum(K.square(anchor-pos),axis=1)
-        neg_dist = K.sum(K.square(anchor-neg),axis=1)
-        loss = pos_dist + K.maximum(alpha - neg_dist, 0.0)
         return loss
 
     return myloss
