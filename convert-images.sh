@@ -14,9 +14,8 @@ convert_dir(){
     export DIR=$1
     mkdir -p "$OUT/$DIR"
     echo "Converting from " "$DIR"
-    parallel -u convert_file ::: $(ls -1 "$CWD/$BASE/$1")
 
-    ls -1 "$CWD/$BASE/$1 | while read f; do
+    ls -1 "$CWD/$BASE/$DIR" | while read f; do
         echo "Converting " "$CWD/$BASE/$DIR/$f" "$CWD/$OUT/$DIR/$f"
         convert -resize 299x299 "$CWD/$BASE/$DIR/$f" -background white -gravity center -extent 299x299 "$CWD/$OUT/$DIR/$f"
     done
