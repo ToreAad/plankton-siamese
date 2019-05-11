@@ -9,8 +9,10 @@ from keras import backend as K
 from generators import singlet_generator
 import config as C
 
+
 def model_path(name, last):
     return 'models/'+str(name)+'_'+str(last)+'.model'
+
 
 def get_convolutional_model():
     inputs_image_simple_convolutional = Input(shape=C.in_dim)
@@ -43,27 +45,30 @@ def initialize_base_model():
         print('Loading model:'+model_path(C.base_model, C.last))
         return load_model(model_path(C.base_model, C.last))
 
+
 def train_base_model(model):
     predictions = Dense(C.n_classes, activation='softmax',
                         name="output")(model)
     trainable_model = Model(inputs=model, outputs=predictions)
-    trainable_model.compile( optimizer='rmsprop', 
-                             loss="categorical_crossentropy", 
-                             metrics=["accuracy"])
+    trainable_model.compile(optimizer='rmsprop',
+                            loss="categorical_crossentropy",
+                            metrics=["accuracy"])
 
-    train_generator = singlet_generator(batch_size=C.batch_size, directory=C.train_dir)
-    val_generator = singlet_generator(batch_size=C.batch_size, directory=C.val_dir)
+    train_generator = singlet_generator(
+        batch_size=C.batch_size, directory=C.train_dir)
+    val_generator = singlet_generator(
+        batch_size=C.batch_size, directory=C.val_dir)
 
     history = model.fit_generator(train_generator,
-                                steps_per_epoch=C.steps_per_epoch,
-                                validation_data=val_generator,
-                                validation_steps=C.val_per_epoch,
-                                epochs=C.epochs,
-                                verbose=1)
-                                # callbacks=cbs,
-                                # verbose=1,
-                                # use_multiprocessing=True,
-                                # workers=5)
+                                  steps_per_epoch=C.steps_per_epoch,
+                                  validation_data=val_generator,
+                                  validation_steps=C.val_per_epoch,
+                                  epochs=C.epochs,
+                                  verbose=1)
+    # callbacks=cbs,
+    # verbose=1,
+    # use_multiprocessing=True,
+    # workers=5)
     return history
 
 
