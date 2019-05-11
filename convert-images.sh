@@ -10,19 +10,18 @@ export BASE=ZooScanSet/imgs
 export OUT=data
 export CWD=$(pwd)
 
-convert_file(){
-    f=$1
-    echo "Converting " "$CWD/$BASE/$DIR/$f" "$CWD/$OUT/$DIR/$f"
-    convert -resize 299x299 "$CWD/$BASE/$DIR/$f" -background white -gravity center -extent 299x299 "$CWD/$OUT/$DIR/$f"
-}
-export -f convert_file
-
 convert_dir(){
     export DIR=$1
     mkdir -p "$OUT/$DIR"
     echo "Converting from " "$DIR"
-    parallel convert_file ::: $(ls -1 "$CWD/$BASE/$1")
+    parallel -u convert_file ::: $(ls -1 "$CWD/$BASE/$1")
+
+    ls -1 "$CWD/$BASE/$1 | while read f; do
+        echo "Converting " "$CWD/$BASE/$DIR/$f" "$CWD/$OUT/$DIR/$f"
+        convert -resize 299x299 "$CWD/$BASE/$DIR/$f" -background white -gravity center -extent 299x299 "$CWD/$OUT/$DIR/$f"
+    done
+
 }
 export -f convert_dir
 echo "Starting parallel convert_dir"
-parallel convert_dir ::: $(ls -1 $BASE)
+parallel -u convert_dir ::: $(ls -1 $BASE)
