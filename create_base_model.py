@@ -15,7 +15,7 @@ import config as C
 
 
 def model_path(name, iteratorion = ""):
-    return 'models/'+str(name)+'.model' if not iteratorion else 'models/'+str(name)+'_'+iteration+'.model'
+    return 'models/'+str(name)+'.model' if not iteratorion else 'models/'+str(name)+'_'+iteratorion+'.model'
 
 
 def get_convolutional_model():
