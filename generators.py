@@ -1,6 +1,7 @@
 import os
 import random
 from PIL import Image
+import matplotlib.pyplot as plt
 import numpy as np
 
 import config as C
@@ -42,6 +43,8 @@ def paste(img):
     start_y = int((299-y)/2)
     end_y   = start_y + y
     i[start_x:end_x,start_y:end_y,0] = img
+    i[start_x:end_x,start_y:end_y,1] = img
+    i[start_x:end_x,start_y:end_y,2] = img
     return i
 
 def triplet_generator(batch_size, directory):
@@ -51,7 +54,7 @@ def triplet_generator(batch_size, directory):
         ans = []
         pss = []
         ngs = []
-        for i in range(0,batch_size):
+        for _ in range(0,batch_size):
             pc,nc,anc,pos,neg = next(trips)
             ys.append((pc,nc))
             a_img = np.array(Image.open(anc))/256
@@ -85,20 +88,26 @@ def singlet_generator(batch_size, directory):
     while True:
         images = []
         labels = []
-        for i in range(0,batch_size):
+        for _ in range(0,batch_size):
             image_path, label = next(trips)
             labels.append(label)
             image = np.array(Image.open(image_path))/256
-            images.append(image)
+            images.append(paste(image))
         X = np.asarray(images)
         y = np.asarray(labels)
-        yield X, y
+        yield (X, y)
 
 # Testing:
 if __name__ == "__main__":
-    print("### Testing triplet_generator ###")
-    g = triplet_generator(4, None, C.train_dir)
-    for x in range(0,4):
-        [a,p,n], y = next(g)
-        print(x, "a:", a.shape, "p:", p.shape, "n:", n.shape, "y:", y.shape)
+    train_generator = singlet_generator(batch_size=C.batch_size, directory=C.train_dir)
+    for _ in range(9):
+        image, label = next(train_generator)
+        for j in image:
+            plt.imshow(j)
+            plt.show()
+    # print("### Testing triplet_generator ###")
+    # g = triplet_generator(4, C.train_dir)
+    # for x in range(0,4):
+    #     [a,p,n], y = next(g)
+    #     print(x, "a:", a.shape, "p:", p.shape, "n:", n.shape, "y:", y.shape)
         
