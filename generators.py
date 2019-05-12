@@ -44,7 +44,7 @@ def paste(img):
     i[start_x:end_x,start_y:end_y,0] = img
     return i
 
-def triplet_generator(batch_size, cache_size, directory):
+def triplet_generator(batch_size, directory):
     trips = mk_triplets(directory)
     while True:
         ys = []
