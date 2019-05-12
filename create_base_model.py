@@ -14,8 +14,8 @@ from generators import singlet_generator
 import config as C
 
 
-def model_path(name):
-    return 'models/'+str(name)+'.model'
+def model_path(name, iteratorion = ""):
+    return 'models/'+str(name)+'.model' if not iteratorion else 'models/'+str(name)+'_'+iteration+'.model'
 
 
 def get_convolutional_model():
