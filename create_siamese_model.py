@@ -10,6 +10,7 @@ from generators import triplet_generator
 import config as C
 import testing as T
 
+
 def tripletize(bmodel):
     anc_in = Input(shape=C.in_dim)
     pos_in = Input(shape=C.in_dim)
@@ -42,22 +43,6 @@ def std_triplet_loss(alpha=5):
     return myloss
 
 
-def train_siamese_model(model):
-    model.compile(optimizer=SGD(lr=C.learn_rate, momentum=0.9),
-              loss=std_triplet_loss())
-    
-    history = model.fit_generator(
-        triplet_generator(C.batch_size, None, C.train_dir), 
-        steps_per_epoch=1000, 
-        epochs=C.iterations,
-        callbacks=[
-            CSVLogger(C.logfile, append=True, separator='\t')
-        ],
-        validation_data=triplet_generator(C.batch_size, None, C.val_dir), validation_steps=100)
-    
-    return history
-
-
 def avg(x):
     return sum(x)/len(x)
 
@@ -67,46 +52,63 @@ def log(s):
         print(s, file=f)
 
 
-# def summarize_progress():
-#     vs = T.get_vectors(base_model, C.val_dir)
-#     c = T.count_nearest_centroid(vs)
-#     log('Summarizing '+str(i))
-#     with open('summarize.'+str(i)+'.log', 'w') as sumfile:
-#         T.summarize(vs, outfile=sumfile)
-#     with open('clusters.'+str(i)+'.log', 'w') as cfile:
-#         T.confusion_counts(c, outfile=cfile)
-#     c_tmp = {}
-#     r_tmp = {}
-#     for v in vs:
-#         c_tmp[v] = T.centroid(vs[v])
-#         r_tmp[v] = T.radius(c_tmp[v], vs[v])
-#     c_rad = [round(100*r_tmp[v])/100 for v in vs]
-#     c_mv = [round(100*T.dist(c_tmp[v], cents[v]))/100 for v in vs]
-#     log('Centroid radius: '+str(c_rad))
-#     log('Centroid moved: '+str(c_mv))
-#     cents = c_tmp
+def train_siamese_model(model, train_generator, val_generator):
+    model.compile(optimizer=SGD(lr=C.learn_rate, momentum=0.9),
+                  loss=std_triplet_loss())
 
-#     with open(C.logfile, 'a') as f:
-#         T.accuracy_counts(c, outfile=f)
-#     # todo: avg cluster radius, avg cluster distances
-#     log('Avg centr rad: %.2f move: %.2f' % (avg(c_rad), avg(c_mv)))
+    history = model.fit_generator(
+        train_generator,
+        steps_per_epoch=1000,
+        epochs=C.iterations,
+        callbacks=[
+            CSVLogger(C.logfile, append=True, separator='\t')
+        ],
+        validation_data=val_generator, validation_steps=C.val_per_epoch)
+
+    return history
+
+
+def summarizing_siamese_model(history, model, train_generator, val_generator, iteration="", cents={}):
+    vs = T.get_vectors(model, C.val_dir)
+    c = T.count_nearest_centroid(vs)
+    log('Summarizing '+str(iteration))
+    with open('summarize.'+iteration+'.log', 'w') as sumfile:
+        T.summarize(vs, outfile=sumfile)
+    with open('clusters.'+iteration+'.log', 'w') as cfile:
+        T.confusion_counts(c, outfile=cfile)
+    with open(C.logfile, 'a') as f:
+        T.accuracy_counts(c, outfile=f)
+    # todo: avg cluster radius, avg cluster distances
+
+    c_tmp = {}
+    r_tmp = {}
+    for v in vs:
+        c_tmp[v] = T.centroid(vs[v])
+        r_tmp[v] = T.radius(c_tmp[v], vs[v])
+    if cents:
+        c_rad = [round(100*r_tmp[v])/100 for v in vs]
+        c_mv = [round(100*T.dist(c_tmp[v], cents[v]))/100 for v in vs]
+        log('Centroid radius: '+str(c_rad))
+        log('Centroid moved: '+str(c_mv))
+        log('Avg centr rad: %.2f move: %.2f' % (avg(c_rad), avg(c_mv)))
+    cents = c_tmp
+
+    return cents
+
 
 def main():
     base_model = initialize_base_model()
     siamese_model = tripletize(base_model)
+    train_generator = triplet_generator(
+        batch_size=C.batch_size, directory=C.train_dir)
+    val_generator = triplet_generator(
+        batch_size=C.batch_size, directory=C.val_dir)
+    history = train_siamese_model(
+        siamese_model, train_generator, val_generator)
+    base_model.save(model_path("siamese"+"_"+C.base_model))
+    summarizing_siamese_model(history, base_model,
+                              train_generator, val_generator)
 
-    vs = T.get_vectors(base_model, C.val_dir)
-    cents = {}
-    for v in vs:
-        cents[v] = T.centroid(vs[v])
-
-    learning_rate = C.learn_rate
-    for i in range(C.last+1, C.last+11):
-        log('Starting iteration '+str(i)+'/'+str(C.last+10)+' lr='+str(learning_rate))
-        history = train_siamese_model(siamese_model)
-        learning_rate = learning_rate * C.lr_decay
-        base_model.save(model_path(C.base_model, i))
-        # summarize_progress()
 
 if __name__ == "__main__":
     main()
