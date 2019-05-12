@@ -105,9 +105,9 @@ def main():
         batch_size=C.batch_size, directory=C.val_dir)
     history = train_siamese_model(
         siamese_model, train_generator, val_generator)
-    base_model.save(model_path("siamese"+"_"+C.base_model))
-    summarizing_siamese_model(history, base_model,
-                              train_generator, val_generator)
+    base_model.save(model_path(C.base_model))
+    # summarizing_siamese_model(history, base_model,
+    #                           train_generator, val_generator)
 
 
 if __name__ == "__main__":
