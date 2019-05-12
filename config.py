@@ -1,6 +1,6 @@
-train_dir = '/home/jupyter/plankton-siamese/train'
-val_dir = '/home/jupyter/plankton-siamese/validate'
-test_dir = '/home/jupyter/plankton-siamese/test'
+train_dir = 'train'
+val_dir = 'validate'
+test_dir = 'test'
 batch_size = 8
 logfile = 'train.log'
 learn_rate = 0.01
