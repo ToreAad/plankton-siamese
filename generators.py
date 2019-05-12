@@ -3,6 +3,10 @@ import random
 from PIL import Image
 import matplotlib.pyplot as plt
 import numpy as np
+import time
+import random as rn
+
+from keras.utils import Sequence
 
 import config as C
 
@@ -97,11 +101,43 @@ def singlet_generator(batch_size, directory):
         y = np.asarray(labels)
         yield (X, y)
 
+
+class Singlet(Sequence):
+    def __init__(self, batch_size, directory):
+        self.batch_size = batch_size
+        self.directory = directory
+        self.classes = os.listdir(directory)
+        self.images = [os.listdir(os.path.join(directory,x)) for x in self.classes]
+        self.seeded = False
+
+    def __len__(self):
+        return C.epochs
+    
+    def __getitem__(self, idx):
+        if not self.seeded:
+            rn.seed(int(time.time()*10000000)%1000000007)
+            np.random.seed(int(time.time()*10000000)%1000000007)
+            self.seeded=True
+
+        images = []
+        labels = []
+        for _ in range(0, C.batch_size):
+            label = random.randint(0, len(self.classes)-1)
+            image_path = os.path.join(self.directory, self.classes[label], random.choice(self.images[label]))
+            labels.append(label)
+            image = np.array(Image.open(image_path))/256
+            images.append(paste(image))
+        X = np.asarray(images)
+        y = np.asarray(labels)
+
+        return (X, y)
+
+
 # Testing:
 if __name__ == "__main__":
-    train_generator = singlet_generator(batch_size=C.batch_size, directory=C.train_dir)
-    for _ in range(9):
-        image, label = next(train_generator)
+    train_generator = Singlet(batch_size=C.batch_size, directory=C.train_dir)
+    for i in range(9):
+        image, label = train_generator[i]
         for j in image:
             plt.imshow(j)
             plt.show()
