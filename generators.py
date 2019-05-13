@@ -2,9 +2,11 @@ import os
 import random
 from PIL import Image
 import matplotlib.pyplot as plt
+from skimage import io
 import numpy as np
 import time
 import random as rn
+from io import BytesIO
 
 import redis
 
@@ -134,14 +136,16 @@ class Singlet(Sequence):
         i[start_x:end_x,start_y:end_y,0] = img
 
     def get_image(self, image_path):
+        
         encoded = self.r.get(image_path)
         if not encoded:
-            image = np.array(Image.open(image_path), dtype=np.float64)/256
-            self.r.set(image_path, image.tobytes())
-            return image
-        else:
-            image = np.frombuffer(encoded, dtype=np.float64).reshape(299, 299)
-            return image
+            with open(image_path, "rb") as binary_file:
+                encoded = binary_file.read()
+                self.r.set(image_path, encoded)
+
+        # data.write(encoded)
+        data = BytesIO(encoded)
+        return np.array(Image.open(data), dtype=np.float64)/256
 
 
     def load_epoch(self):
