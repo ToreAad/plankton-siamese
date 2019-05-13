@@ -35,7 +35,7 @@ def get_convolutional_model():
     x3 = MaxPooling2D(pool_size=(2, 2))(x3)
     x3 = Dropout(0.1)(x3)
     x3 = Flatten()(x3)
-    out = Dense(512, activation='relu')(x3)
+    out = Dense(C.out_dim, activation='relu')(x3)
     return Model(inputs=inputs_image_simple_convolutional, outputs=out)
 
 
