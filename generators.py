@@ -6,8 +6,12 @@ import numpy as np
 import time
 import random as rn
 
+import redis
+
 from keras.utils import Sequence
 
+
+# from image_cache import toRedis, fromRedis
 import config as C
 
 
@@ -109,10 +113,12 @@ class Singlet(Sequence):
         self.steps_per_epoch = steps_per_epoch
         self.classes = os.listdir(directory)
         self.images = []
+        self.r = redis.Redis(host='localhost', port=6379, db=0)
+
         for label in self.classes:
             image_names = os.listdir(os.path.join(directory,label))
             image_paths = [os.path.join(self.directory, label, name) for name in image_names]
-            self.images.append([(fp, None) for fp in image_paths])
+            self.images.append(image_paths)
         self.seeded = False
         self.X = {}
         self.y = {}
@@ -126,6 +132,17 @@ class Singlet(Sequence):
         end_y   = start_y + y
         i[start_x:end_x,start_y:end_y,0] = img
 
+    def get_image(self, image_path):
+        encoded = self.r.get(image_path)
+        if not encoded:
+            image = np.array(Image.open(image_path), dtype=np.float64)/256
+            self.r.set(image_path, image.tobytes())
+            return image
+        else:
+            image = np.frombuffer(encoded, dtype=np.float64).reshape(299, 299)
+            return image
+
+
     def load_epoch(self):
         if not self.seeded:
             rn.seed(int(time.time()*10000000)%1000000007)
@@ -138,10 +155,8 @@ class Singlet(Sequence):
             for blank_img in images:
                 label = random.randint(0, len(self.classes)-1)
                 random_choice = random.randint(0, len(self.images[label])-1)
-                image_path, image = self.images[label][random_choice]
-                if image is None :
-                    image = np.array(Image.open(image_path), dtype=np.float64)/256
-                    self.images[label][random_choice] = (image_path, image)
+                image_path = self.images[label][random_choice]
+                image = self.get_image(image_path)
                 labels.append(label)
                 self.paste(blank_img, image)
             self.X[i] = np.asarray(images)
