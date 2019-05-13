@@ -114,10 +114,11 @@ class Singlet(Sequence):
         self.classes = os.listdir(directory)
         self.images = []
         self.r = redis.Redis(host='localhost', port=6379, db=0)
-
+        self.min_n = None
         for label in self.classes:
             image_names = os.listdir(os.path.join(directory,label))
             image_paths = [os.path.join(self.directory, label, name) for name in image_names]
+            self.min_n = len(image_paths) if not self.min_n else min(len(image_paths), self.min_n)
             self.images.append(image_paths)
         self.seeded = False
         self.X = {}
@@ -154,7 +155,7 @@ class Singlet(Sequence):
             labels = []
             for blank_img in images:
                 label = random.randint(0, len(self.classes)-1)
-                random_choice = random.randint(0, len(self.images[label])-1)
+                random_choice = random.randint(0, self.min_n-1) #random.randint(0, len(self.images[label])-1)
                 image_path = self.images[label][random_choice]
                 image = self.get_image(image_path)
                 labels.append(label)
