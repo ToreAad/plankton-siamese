@@ -1,24 +1,29 @@
 from keras.models import Model, Input
-from keras.layers import Concatenate
+from keras.layers import Concatenate, Dense
 from keras.callbacks import CSVLogger
 from keras import backend as K
 from keras.optimizers import SGD
 
-from create_base_model import initialize_base_model, model_path
+from create_base_model import initialize_base_model
 from generators import triplet_generator
 
 import config as C
 import testing as T
 
+def model_path(name, iteration=""):
+    return 'models/'+ name +'.model' if not iteration else 'models/'+ name +'_'+iteration+'.model'
+
 
 def tripletize(bmodel):
+    bitvector = Dense(C.out_dim, activation='relu')(bmodel)
+
     anc_in = Input(shape=C.in_dim)
     pos_in = Input(shape=C.in_dim)
     neg_in = Input(shape=C.in_dim)
 
-    anc_out = bmodel(anc_in)
-    pos_out = bmodel(pos_in)
-    neg_out = bmodel(neg_in)
+    anc_out = bitvector(anc_in)
+    pos_out = bitvector(pos_in)
+    neg_out = bitvector(neg_in)
 
     out_vector = Concatenate()([anc_out, pos_out, neg_out])
     return Model(inputs=[anc_in, pos_in, neg_in], outputs=out_vector)
@@ -63,7 +68,7 @@ def train_siamese_model(model, train_generator, val_generator):
         callbacks=[
             CSVLogger(C.logfile, append=True, separator='\t')
         ],
-        validation_data=val_generator, validation_steps=C.val_per_epoch)
+        validation_data=val_generator, validation_steps=C.siamese_validation_steps)
 
     return history
 
@@ -100,12 +105,12 @@ def main():
     base_model = initialize_base_model()
     siamese_model = tripletize(base_model)
     train_generator = triplet_generator(
-        batch_size=C.batch_size, directory=C.train_dir)
+        batch_size=C.siamese_batch_size, directory=C.train_dir)
     val_generator = triplet_generator(
-        batch_size=C.batch_size, directory=C.val_dir)
+        batch_size=C.siamese_batch_size, directory=C.val_dir)
     history = train_siamese_model(
         siamese_model, train_generator, val_generator)
-    base_model.save(model_path(C.base_model))
+    base_model.save(model_path("siamese_"+C.base_model))
     # summarizing_siamese_model(history, base_model,
     #                           train_generator, val_generator)
 

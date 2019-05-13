@@ -38,7 +38,7 @@ def mk_triplets(directory):
 
 # Scale to image size, paste on white background
 def paste(img):
-    i = np.ones((299,299,3))
+    i = np.ones(C.in_dim)
     # NB: Mono images lack the third dimension and will fail here:
     # (x,y,z) = img.shape
     (x,y) = img.shape
@@ -47,8 +47,8 @@ def paste(img):
     start_y = int((299-y)/2)
     end_y   = start_y + y
     i[start_x:end_x,start_y:end_y,0] = img
-    i[start_x:end_x,start_y:end_y,1] = img
-    i[start_x:end_x,start_y:end_y,2] = img
+    # i[start_x:end_x,start_y:end_y,1] = img
+    # i[start_x:end_x,start_y:end_y,2] = img
     return i
 
 def triplet_generator(batch_size, directory):
@@ -111,7 +111,7 @@ class Singlet(Sequence):
         self.seeded = False
 
     def __len__(self):
-        return C.epochs
+        return C.base_epochs
     
     def __getitem__(self, idx):
         if not self.seeded:
@@ -121,11 +121,11 @@ class Singlet(Sequence):
 
         images = []
         labels = []
-        for _ in range(0, C.batch_size):
+        for _ in range(0, C.base_batch_size):
             label = random.randint(0, len(self.classes)-1)
             image_path = os.path.join(self.directory, self.classes[label], random.choice(self.images[label]))
             labels.append(label)
-            image = np.array(Image.open(image_path))/256
+            image = np.array(Image.open(image_path), dtype=np.float64)/256
             images.append(paste(image))
         X = np.asarray(images)
         y = np.asarray(labels)
@@ -135,7 +135,7 @@ class Singlet(Sequence):
 
 # Testing:
 if __name__ == "__main__":
-    train_generator = Singlet(batch_size=C.batch_size, directory=C.train_dir)
+    train_generator = Singlet(batch_size=C.base_batch_size, directory=C.train_dir)
     for i in range(9):
         image, label = train_generator[i]
         for j in image:

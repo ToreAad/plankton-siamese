@@ -15,8 +15,8 @@ from generators import Singlet
 import config as C
 
 
-def model_path(name, iteration=""):
-    return 'models/'+ name +'.model' if not iteration else 'models/'+ name +'_'+iteration+'.model'
+def model_path(name):
+    return 'models/'+ name +'.model'
 
 
 def get_convolutional_model():
@@ -35,21 +35,20 @@ def get_convolutional_model():
     x3 = MaxPooling2D(pool_size=(2, 2))(x3)
     x3 = Dropout(0.1)(x3)
     x3 = Flatten()(x3)
-    x3 = Dense(512, activation='relu')(x3)
-    bitvector = Dense(C.out_dim, activation='relu')(x3)
-    return Model(inputs=inputs_image_simple_convolutional, outputs=bitvector)
+    out = Dense(512, activation='relu')(x3)
+    return Model(inputs=inputs_image_simple_convolutional, outputs=out)
 
 
 def initialize_base_model():
     if not os.path.exists('models'):
         os.makedirs('models')
 
-    if not os.path.exists(model_path(C.base_model, C.last)):
+    if not os.path.exists(model_path(C.base_model)):
         print('Creating base network from scratch.')
         return get_convolutional_model()
     else:
-        print('Loading model:'+model_path(C.base_model, C.last))
-        return load_model(model_path(C.base_model, C.last))
+        print('Loading model:'+model_path(C.base_model))
+        return load_model(model_path(C.base_model))
 
 
 def plot_history(outputfolder, history):
@@ -73,7 +72,7 @@ def plot_history(outputfolder, history):
 
 def print_summary(outputfolder, model, val_generator):
     score = model.evaluate_generator(
-        val_generator, steps=C.val_per_epoch, use_multiprocessing=True, workers=8)
+        val_generator, steps=C.base_validation_steps)
     summary = "Validation loss: {}\nValidation accuracy: {}".format(
         score[0], score[1])
     print(summary)
@@ -85,7 +84,7 @@ def plot_confusion_matrix(outputfolder, model, val_generator):
     img_vals = []
     stat_vals = []
     y_vals = []
-    for i in range(C.val_per_epoch):
+    for i in range(C.base_validation_steps):
         x, y = val_generator[i]
         if len(x) == 2:
             img_vals.append(x[0])
@@ -115,7 +114,7 @@ def plot_confusion_matrix(outputfolder, model, val_generator):
 
 
 def visualize_training(history, model, val_generator, iteration=""):
-    outputfolder = C.base_model if not iteration else C.base_model+"_"+iteration
+    outputfolder = C.base_model
     if not os.path.exists(outputfolder):
         os.makedirs(outputfolder)
     plot_history(outputfolder, history)
@@ -123,7 +122,7 @@ def visualize_training(history, model, val_generator, iteration=""):
     plot_confusion_matrix(outputfolder, model, val_generator)
 
 
-def train_base_model(model, train_generator, val_generator, epochs=1, steps_per_epoch=100, validation_steps=100 ):
+def train_base_model(model, train_generator, val_generator ):
     inp = Input(shape=C.in_dim)
     x = model(inp)
     predictions = Dense(C.n_classes, activation='softmax', name="output")(x)
@@ -132,17 +131,14 @@ def train_base_model(model, train_generator, val_generator, epochs=1, steps_per_
                             loss="sparse_categorical_crossentropy",
                             metrics=["accuracy"])
     history = trainable_model.fit_generator(train_generator,
-                                            steps_per_epoch=steps_per_epoch,
+                                            steps_per_epoch=C.base_steps_per_epoch,
                                             validation_data=val_generator,
-                                            validation_steps=validation_steps,
-                                            epochs=epochs,
+                                            validation_steps=C.base_validation_steps,
+                                            epochs=C.base_epochs,
                                             callbacks=[
                                                 CSVLogger(
                                                     C.logfile, append=True, separator='\t')
-                                            ],
-                                            verbose=1,
-                                            use_multiprocessing=True, 
-                                            workers=8)
+                                            ])
 
     
     return history, trainable_model
@@ -151,9 +147,9 @@ def train_base_model(model, train_generator, val_generator, epochs=1, steps_per_
 def main():
     model = initialize_base_model()
     train_generator = Singlet(
-        batch_size=C.batch_size, directory=C.train_dir)
+        batch_size=C.base_batch_size, directory=C.train_dir)
     val_generator = Singlet(
-        batch_size=C.batch_size, directory=C.val_dir)
+        batch_size=C.base_batch_size, directory=C.val_dir)
     history, trainable_model = train_base_model(model, train_generator, val_generator)
     visualize_training(history, trainable_model, val_generator)
     model.save(model_path(C.base_model))
