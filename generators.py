@@ -108,7 +108,11 @@ class Singlet(Sequence):
         self.directory = directory
         self.steps_per_epoch = steps_per_epoch
         self.classes = os.listdir(directory)
-        self.images = [os.listdir(os.path.join(directory,x)) for x in self.classes]
+        self.images = []
+        for label in self.classes:
+            image_names = os.listdir(os.path.join(directory,label))
+            image_paths = [os.path.join(self.directory, label, name) for name in image_names]
+            self.images.append([(fp, None) for fp in image_paths])
         self.seeded = False
         self.X = {}
         self.y = {}
@@ -133,9 +137,12 @@ class Singlet(Sequence):
             labels = []
             for blank_img in images:
                 label = random.randint(0, len(self.classes)-1)
-                image_path = os.path.join(self.directory, self.classes[label], random.choice(self.images[label]))
+                random_choice = random.randint(0, len(self.images[label])-1)
+                image_path, image = self.images[label][random_choice]
+                if image is None :
+                    image = np.array(Image.open(image_path), dtype=np.float64)/256
+                    self.images[label][random_choice] = (image_path, image)
                 labels.append(label)
-                image = np.array(Image.open(image_path), dtype=np.float64)/256
                 self.paste(blank_img, image)
             self.X[i] = np.asarray(images)
             self.y[i] = np.asarray(labels)
