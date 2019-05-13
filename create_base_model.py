@@ -7,7 +7,7 @@ from keras.applications.inception_v3 import InceptionV3
 from keras.callbacks import CSVLogger
 from keras.models import Sequential, Model, Input, load_model
 from keras.layers import Dense, Activation, Flatten, GlobalAveragePooling2D, \
-    Concatenate, Lambda, Conv2D, MaxPooling2D, Dropout
+    Concatenate, Lambda, Conv2D, MaxPooling2D, Dropout, BatchNormalization
 from keras import backend as K
 from keras.utils import to_categorical
 
@@ -24,14 +24,17 @@ def get_convolutional_model():
 
     x1 = Conv2D(32, (3, 3), activation='relu')(
         inputs_image_simple_convolutional)
+    x1 = BatchNormalization()(x1) 
     x1 = MaxPooling2D(pool_size=(2, 2))(x1)
     x1 = Dropout(0.1)(x1)
 
     x2 = Conv2D(48, (3, 3), padding='same', activation='relu')(x1)
+    x2 = BatchNormalization()(x2) 
     x2 = MaxPooling2D(pool_size=(2, 2))(x2)
     x2 = Dropout(0.1)(x2)
 
     x3 = Conv2D(64, (3, 3), padding='same', activation='relu')(x2)
+    x3 = BatchNormalization()(x3) 
     x3 = MaxPooling2D(pool_size=(2, 2))(x3)
     x3 = Dropout(0.1)(x3)
     x3 = Flatten()(x3)
