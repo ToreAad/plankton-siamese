@@ -151,10 +151,10 @@ def main():
         batch_size=C.siamese_batch_size, directory=C.val_dir, steps_per_epoch=C.base_validation_steps)
     print("Training model")
     history, trainable_model = train_base_model(model, train_generator, val_generator)
+    model.save(model_path(C.base_model))
     print("Visualizing training")
     visualize_training(history, trainable_model, val_generator)
-    model.save(model_path(C.base_model))
-
+    
 
 if __name__ == "__main__":
     main()

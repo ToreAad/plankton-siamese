@@ -5,25 +5,30 @@ from keras import backend as K
 from keras.optimizers import SGD
 
 from create_base_model import initialize_base_model
-from generators import triplet_generator
+from generators import Triplet
 
 import config as C
 import testing as T
+
 
 def model_path(name, iteration=""):
     return 'models/'+ name +'.model' if not iteration else 'models/'+ name +'_'+iteration+'.model'
 
 
 def tripletize(bmodel):
-    bitvector = Dense(C.out_dim, activation='relu')(bmodel)
 
+    #bmodel_in = Input(shape=C.in_dim)
+    #x = bmodel(bmodel_in)
+    #bitvector = Dense(C.out_dim, activation='relu')(x)
+
+    
     anc_in = Input(shape=C.in_dim)
     pos_in = Input(shape=C.in_dim)
     neg_in = Input(shape=C.in_dim)
 
-    anc_out = bitvector(anc_in)
-    pos_out = bitvector(pos_in)
-    neg_out = bitvector(neg_in)
+    anc_out = bmodel(anc_in)
+    pos_out = bmodel(pos_in)
+    neg_out = bmodel(neg_in)
 
     out_vector = Concatenate()([anc_out, pos_out, neg_out])
     return Model(inputs=[anc_in, pos_in, neg_in], outputs=out_vector)
@@ -63,12 +68,11 @@ def train_siamese_model(model, train_generator, val_generator):
 
     history = model.fit_generator(
         train_generator,
-        steps_per_epoch=1000,
-        epochs=C.iterations,
+        epochs=C.siamese_epochs,
         callbacks=[
             CSVLogger(C.logfile, append=True, separator='\t')
         ],
-        validation_data=val_generator, validation_steps=C.siamese_validation_steps)
+        validation_data=val_generator)
 
     return history
 
@@ -104,13 +108,14 @@ def summarizing_siamese_model(history, model, train_generator, val_generator, it
 def main():
     base_model = initialize_base_model()
     siamese_model = tripletize(base_model)
-    train_generator = triplet_generator(
-        batch_size=C.siamese_batch_size, directory=C.train_dir)
-    val_generator = triplet_generator(
-        batch_size=C.siamese_batch_size, directory=C.val_dir)
+    train_generator = Triplet(
+        batch_size=C.siamese_batch_size, directory=C.train_dir, steps_per_epoch=C.siamese_steps_per_epoch)
+    val_generator = Triplet(
+        batch_size=C.siamese_batch_size, directory=C.val_dir, steps_per_epoch=C.siamese_steps_per_epoch)
     history = train_siamese_model(
         siamese_model, train_generator, val_generator)
-    base_model.save(model_path("siamese_"+C.base_model))
+    base_model.save(model_path(C.base_model))
+    siamese_model.save(model_path("siamese_"+C.base_model))
     # summarizing_siamese_model(history, base_model,
     #                           train_generator, val_generator)
 
