@@ -8,10 +8,10 @@ n_classes = 40
 
 # Base network parameters
 base_model = "simple_convolutional"
-base_batch_size = 8
-base_steps_per_epoch = 800//base_batch_size
-base_validation_steps = 800//base_batch_size
-base_epochs = 5
+base_batch_size = 64
+base_steps_per_epoch = 2048//base_batch_size
+base_validation_steps = 128//base_batch_size
+base_epochs = 25
 
 # Siamese network parameters
 siamese_batch_size = 8
