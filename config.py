@@ -14,10 +14,10 @@ base_validation_steps = 128//base_batch_size
 base_epochs = 25
 
 # Siamese network parameters
-siamese_batch_size = 8
-siamese_steps_per_epoch = 8000//base_batch_size
-siamese_validation_steps = 800//base_batch_size
-siamese_epochs = 10
+siamese_batch_size = 64
+siamese_steps_per_epoch = 2048//base_batch_size
+siamese_validation_steps = 128//base_batch_size
+siamese_epochs = 25
 logfile = 'train.log'
 learn_rate = 0.01
 lr_decay = 0.9

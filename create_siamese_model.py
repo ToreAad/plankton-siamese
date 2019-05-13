@@ -15,20 +15,20 @@ def model_path(name, iteration=""):
     return 'models/'+ name +'.model' if not iteration else 'models/'+ name +'_'+iteration+'.model'
 
 
-def tripletize(bmodel):
+def tripletize(model):
 
-    #bmodel_in = Input(shape=C.in_dim)
-    #x = bmodel(bmodel_in)
-    #bitvector = Dense(C.out_dim, activation='relu')(x)
-
+    m_in = Input(shape=C.in_dim)
+    x = model(m_in)
+    bitvector = Dense(C.out_dim, activation='relu')(x)
+    bitvector_model = Model(inputs=m_in, outputs=bitvector)
     
     anc_in = Input(shape=C.in_dim)
     pos_in = Input(shape=C.in_dim)
     neg_in = Input(shape=C.in_dim)
 
-    anc_out = bmodel(anc_in)
-    pos_out = bmodel(pos_in)
-    neg_out = bmodel(neg_in)
+    anc_out = bitvector_model(anc_in)
+    pos_out = bitvector_model(pos_in)
+    neg_out = bitvector_model(neg_in)
 
     out_vector = Concatenate()([anc_out, pos_out, neg_out])
     return Model(inputs=[anc_in, pos_in, neg_in], outputs=out_vector)
