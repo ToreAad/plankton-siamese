@@ -131,7 +131,6 @@ def train_base_model(model, train_generator, val_generator ):
                             loss="sparse_categorical_crossentropy",
                             metrics=["accuracy"])
     history = trainable_model.fit_generator(train_generator,
-                                            steps_per_epoch=C.base_steps_per_epoch,
                                             validation_data=val_generator,
                                             validation_steps=C.base_validation_steps,
                                             epochs=C.base_epochs,

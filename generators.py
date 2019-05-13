@@ -109,28 +109,44 @@ class Singlet(Sequence):
         self.classes = os.listdir(directory)
         self.images = [os.listdir(os.path.join(directory,x)) for x in self.classes]
         self.seeded = False
+        self.X = {}
+        self.y = {}
+        self.load_epoch()
 
-    def __len__(self):
-        return C.base_epochs
-    
-    def __getitem__(self, idx):
+    def paste(self, i, img):
+        (x,y) = img.shape
+        start_x = int((299-x)/2)
+        end_x   = start_x + x
+        start_y = int((299-y)/2)
+        end_y   = start_y + y
+        i[start_x:end_x,start_y:end_y,0] = img
+
+    def load_epoch(self):
         if not self.seeded:
             rn.seed(int(time.time()*10000000)%1000000007)
             np.random.seed(int(time.time()*10000000)%1000000007)
             self.seeded=True
 
-        images = []
-        labels = []
-        for _ in range(0, C.base_batch_size):
-            label = random.randint(0, len(self.classes)-1)
-            image_path = os.path.join(self.directory, self.classes[label], random.choice(self.images[label]))
-            labels.append(label)
-            image = np.array(Image.open(image_path), dtype=np.float64)/256
-            images.append(paste(image))
-        X = np.asarray(images)
-        y = np.asarray(labels)
+        for i in range(len(self)):
+            images = np.ones((C.base_batch_size, *C.in_dim))
+            labels = []
+            for blank_img in images:
+                label = random.randint(0, len(self.classes)-1)
+                image_path = os.path.join(self.directory, self.classes[label], random.choice(self.images[label]))
+                labels.append(label)
+                image = np.array(Image.open(image_path), dtype=np.float64)/256
+                self.paste(blank_img, image)
+            self.X[i] = np.asarray(images)
+            self.y[i] = np.asarray(labels)
 
-        return (X, y)
+    def on_epoch_end(self):
+        self.load_epoch()
+
+    def __len__(self):
+        return C.base_steps_per_epoch
+    
+    def __getitem__(self, idx):
+        return (self.X[idx], self.y[idx])
 
 
 # Testing:
@@ -139,7 +155,7 @@ if __name__ == "__main__":
     for i in range(9):
         image, label = train_generator[i]
         for j in image:
-            plt.imshow(j)
+            plt.imshow(j[:,:,0])
             plt.show()
     # print("### Testing triplet_generator ###")
     # g = triplet_generator(4, C.train_dir)
