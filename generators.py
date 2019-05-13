@@ -103,9 +103,10 @@ def singlet_generator(batch_size, directory):
 
 
 class Singlet(Sequence):
-    def __init__(self, batch_size, directory):
+    def __init__(self, batch_size, directory, steps_per_epoch):
         self.batch_size = batch_size
         self.directory = directory
+        self.steps_per_epoch = steps_per_epoch
         self.classes = os.listdir(directory)
         self.images = [os.listdir(os.path.join(directory,x)) for x in self.classes]
         self.seeded = False
@@ -143,7 +144,7 @@ class Singlet(Sequence):
         self.load_epoch()
 
     def __len__(self):
-        return C.base_steps_per_epoch
+        return self.steps_per_epoch
     
     def __getitem__(self, idx):
         return (self.X[idx], self.y[idx])
@@ -151,7 +152,7 @@ class Singlet(Sequence):
 
 # Testing:
 if __name__ == "__main__":
-    train_generator = Singlet(batch_size=C.base_batch_size, directory=C.train_dir)
+    train_generator = Singlet(batch_size=C.base_batch_size, directory=C.train_dir, steps_per_epoch=9)
     for i in range(9):
         image, label = train_generator[i]
         for j in image:
