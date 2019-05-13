@@ -137,6 +137,7 @@ def train_base_model(model, train_generator, val_generator ):
                                             validation_data=val_generator,
                                             validation_steps=C.base_validation_steps,
                                             epochs=C.base_epochs,
+                                            steps_per_epoch=len(train_generator)
                                             workers=4,
                                             callbacks=[
                                                 CSVLogger(

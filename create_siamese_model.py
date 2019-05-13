@@ -1,5 +1,5 @@
 from keras.models import Model, Input
-from keras.layers import Concatenate, Dense
+from keras.layers import Concatenate, Dense, BatchNormalization
 from keras.callbacks import CSVLogger
 from keras import backend as K
 from keras.optimizers import SGD
@@ -19,6 +19,7 @@ def tripletize(bitvector_model):
 
     # m_in = Input(shape=C.in_dim)
     # x = model(m_in)
+    # x = BatchNormalization()(x)
     # bitvector = Dense(C.out_dim, activation='relu')(x)
     # bitvector_model = Model(inputs=m_in, outputs=bitvector)
     
@@ -69,6 +70,7 @@ def train_siamese_model(model, train_generator, val_generator):
     history = model.fit_generator(
         train_generator,
         epochs=C.siamese_epochs,
+        steps_per_epoch=len(train_generator),
         callbacks=[
             CSVLogger(C.logfile, append=True, separator='\t')
         ],
