@@ -134,6 +134,7 @@ def train_base_model(model, train_generator, val_generator ):
                                             validation_data=val_generator,
                                             validation_steps=C.base_validation_steps,
                                             epochs=C.base_epochs,
+                                            workers=4,
                                             callbacks=[
                                                 CSVLogger(
                                                     C.logfile, append=True, separator='\t')
@@ -143,11 +144,14 @@ def train_base_model(model, train_generator, val_generator ):
 
 def main():
     model = initialize_base_model()
+    print("Instantiating generators")
     train_generator = Singlet(
         batch_size=C.siamese_batch_size, directory=C.train_dir, steps_per_epoch=C.base_steps_per_epoch)
     val_generator = Singlet(
         batch_size=C.siamese_batch_size, directory=C.val_dir, steps_per_epoch=C.base_validation_steps)
+    print("Training model")
     history, trainable_model = train_base_model(model, train_generator, val_generator)
+    print("Visualizing training")
     visualize_training(history, trainable_model, val_generator)
     model.save(model_path(C.base_model))
 
