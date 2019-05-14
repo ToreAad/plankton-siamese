@@ -10,7 +10,7 @@ from io import BytesIO
 
 import redis
 
-from keras.utils import Sequence
+from tensorflow.keras.utils import Sequence
 
 
 # from image_cache import toRedis, fromRedis
