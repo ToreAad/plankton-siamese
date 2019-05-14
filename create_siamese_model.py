@@ -69,7 +69,6 @@ def train_siamese_model(model, train_generator, val_generator):
     history = model.fit_generator(
         train_generator,
         epochs=C.siamese_epochs,
-        steps_per_epoch=len(train_generator),
         callbacks=[
             CSVLogger(C.logfile, append=True, separator='\t')
         ],
