@@ -166,7 +166,7 @@ class Singlet(Sequence):
             self.seeded = True
 
         for i in range(len(self)):
-            images = np.ones((C.base_batch_size, *C.in_dim))
+            images = np.ones((self.batch_size, *C.in_dim))
             labels = []
             for blank_img in images:
                 label = random.randint(0, len(self.classes)-1)
@@ -196,11 +196,11 @@ class Triplet(Singlet):
             self.seeded = True
 
         for i in range(len(self)):
-            a_img = np.ones((C.base_batch_size, *C.in_dim))
-            p_img = np.ones((C.base_batch_size, *C.in_dim))
-            n_img = np.ones((C.base_batch_size, *C.in_dim))
+            a_img = np.ones((self.batch_size, *C.in_dim))
+            p_img = np.ones((self.batch_size, *C.in_dim))
+            n_img = np.ones((self.batch_size, *C.in_dim))
             labels = []
-            for j in range(C.base_batch_size):
+            for j in range(self.batch_size):
                 pos_class = random.randint(0, len(self.classes)-1)
                 neg_class = random.randint(0, len(self.classes)-2)
                 if neg_class >= pos_class:
