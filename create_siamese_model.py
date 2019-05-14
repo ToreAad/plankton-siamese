@@ -20,7 +20,7 @@ def tripletize(model):
     m_in = Input(shape=C.in_dim)
     x = model(m_in)
     x = BatchNormalization()(x)
-    bitvector = Dense(C.out_dim, activation='relu')(x)
+    bitvector = Dense(C.out_dim, activation='sigmoid')(x)
     bitvector_model = Model(inputs=m_in, outputs=bitvector)
     
     anc_in = Input(shape=C.in_dim)

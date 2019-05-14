@@ -24,13 +24,13 @@ def get_convolutional_model():
 
     x1 = BatchNormalization()(inputs_image_simple_convolutional) 
     x1 = Conv2D(32, (3, 3))(x1)
-    #x1 = BatchNormalization()(x1)
+    x1 = BatchNormalization()(x1)
     x1 = Activation(activation='relu')(x1)
     x1 = MaxPooling2D(pool_size=(2, 2))(x1)
     #x1 = Dropout(0.1)(x1)
 
     x2 = Conv2D(48, (3, 3), padding='same')(x1)
-    #x2 = BatchNormalization()(x2)
+    x2 = BatchNormalization()(x2)
     x2 = Activation(activation='relu')(x2)
     x2 = MaxPooling2D(pool_size=(2, 2))(x2)
     #x2 = Dropout(0.1)(x2)
@@ -44,6 +44,17 @@ def get_convolutional_model():
     out = Dense(C.out_dim, activation='relu')(x3)
     return Model(inputs=inputs_image_simple_convolutional, outputs=out)
 
+def get_inception_model():
+    inp = Input(shape=C.in_dim)
+
+    x1 = BatchNormalization()(inp) 
+    x1 = Conv2D(3, (3, 3), padding='same')(x1)
+
+    base_model = InceptionV3(weights='imagenet', include_top=False)(x1)
+
+    tmp = GlobalAveragePooling2D()(base_model.output)
+
+    return Model(inputs=base_model.input, outputs=tmp)
 
 def initialize_base_model():
     if not os.path.exists('models'):
@@ -51,7 +62,10 @@ def initialize_base_model():
 
     if not os.path.exists(model_path(C.base_model)):
         print('Creating base network from scratch.')
-        return get_convolutional_model()
+        if C.base_model == 'simple_convolutional':
+            return get_convolutional_model()
+        elif C.base_model == 'inception':
+            return get_inception_model()
     else:
         print('Loading model:'+model_path(C.base_model))
         return load_model(model_path(C.base_model))
