@@ -106,10 +106,14 @@ def main():
         batch_size=C.siamese_batch_size, directory=C.val_dir, steps_per_epoch=C.base_validation_steps)
     print("Training model")
     history, trainable_model = train_base_model(model, train_generator, val_generator)
-    pickle.dump(history, open(C.base_model+"_history", "wb"))
+    
     
     model.save(model_path(C.base_model))
     trainable_model.save(model_path("trained_"+C.base_model))
+    h = {}
+    h["loss"] = history["loss"]
+    h["accuracy"] = history["accuracy"]
+    pickle.dump(h, open(C.base_model+"_history", "wb"))
     #print("Visualizing training")
     #visualize_training(history, trainable_model, val_generator)
     

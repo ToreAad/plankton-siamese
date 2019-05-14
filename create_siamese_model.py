@@ -90,28 +90,6 @@ def train_siamese_model(model, train_generator, val_generator):
     return history
 
 
-# def summarizing_siamese_model(history, model, train_generator, val_generator, iteration="", cents={}):
-#     vs = T.get_vectors(model, C.val_dir)
-#     c = T.count_nearest_centroid(vs)
-#     log('Summarizing '+str(iteration))
-#     with open('summarize.'+iteration+'.log', 'w') as sumfile:
-#         T.summarize(vs, outfile=sumfile)
-#     with open('clusters.'+iteration+'.log', 'w') as cfile:
-#         T.confusion_counts(c, outfile=cfile)
-#     with open(C.logfile, 'a') as f:
-#         T.accuracy_counts(c, outfile=f)
-#     # todo: avg cluster radius, avg cluster distances
-
-#     c_tmp = {}
-#     r_tmp = {}
-#     for v in vs:
-#         c_tmp[v] = T.centroid(vs[v])
-#         r_tmp[v] = T.radius(c_tmp[v], vs[v])
-    
-#     c_rad = [round(100*r_tmp[v])/100 for v in vs]
-#     return (c_rad, c_tmp)
-
-
 def main():
     bitvector_model = initialize_bitvector_model()
     siamese_model = tripletize(bitvector_model)
@@ -121,11 +99,12 @@ def main():
         batch_size=C.siamese_batch_size, directory=C.val_dir, steps_per_epoch=C.siamese_validation_steps)
     history = train_siamese_model(
         siamese_model, train_generator, val_generator)
-    pickle.dump(history, open("siamese_"+C.base_model+"_history", "wb"))
+    
     bitvector_model.save(model_path("bitvector_"+C.base_model))
     siamese_model.save(model_path("siamese_"+C.base_model))
-    # summarizing_siamese_model(history, base_model,
-    #                           train_generator, val_generator)
+    h = {}
+    h["loss"] = history["loss"]
+    pickle.dump(h, open("siamese_"+C.base_model+"_history", "wb"))
 
 
 if __name__ == "__main__":
