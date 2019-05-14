@@ -111,7 +111,7 @@ def main():
     train_generator = Triplet(
         batch_size=C.siamese_batch_size, directory=C.train_dir, steps_per_epoch=C.siamese_steps_per_epoch)
     val_generator = Triplet(
-        batch_size=C.siamese_batch_size, directory=C.val_dir, steps_per_epoch=C.siamese_steps_per_epoch)
+        batch_size=C.siamese_batch_size, directory=C.val_dir, steps_per_epoch=C.siamese_validation_steps)
     history = train_siamese_model(
         siamese_model, train_generator, val_generator)
     base_model.save(model_path(C.base_model))
