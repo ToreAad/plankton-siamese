@@ -1,8 +1,8 @@
-from keras.models import Model, Input
-from keras.layers import Concatenate, Dense, BatchNormalization
-from keras.callbacks import CSVLogger
-from keras import backend as K
-from keras.optimizers import SGD
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Concatenate, Dense, BatchNormalization, Input
+from tensorflow.keras.callbacks import CSVLogger
+from tensorflow.keras import backend as K
+from tensorflow.keras.optimizers import SGD
 
 from create_base_model import initialize_base_model
 from generators import Triplet
