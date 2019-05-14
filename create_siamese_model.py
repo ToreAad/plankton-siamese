@@ -15,13 +15,13 @@ def model_path(name, iteration=""):
     return 'models/'+ name +'.model' if not iteration else 'models/'+ name +'_'+iteration+'.model'
 
 
-def tripletize(bitvector_model):
+def tripletize(model):
 
-    # m_in = Input(shape=C.in_dim)
-    # x = model(m_in)
-    # x = BatchNormalization()(x)
-    # bitvector = Dense(C.out_dim, activation='relu')(x)
-    # bitvector_model = Model(inputs=m_in, outputs=bitvector)
+    m_in = Input(shape=C.in_dim)
+    x = model(m_in)
+    x = BatchNormalization()(x)
+    bitvector = Dense(C.out_dim, activation='relu')(x)
+    bitvector_model = Model(inputs=m_in, outputs=bitvector)
     
     anc_in = Input(shape=C.in_dim)
     pos_in = Input(shape=C.in_dim)
