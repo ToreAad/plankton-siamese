@@ -12,10 +12,11 @@ base_batch_size = 20
 base_steps_per_epoch = 1000
 base_validation_steps = 100
 base_epochs = 25
+base_learn_rate = 0.01
 
 # Siamese network parameters
-siamese_batch_size = 10
-siamese_steps_per_epoch = 100
+siamese_batch_size = 20
+siamese_steps_per_epoch = 1000
 siamese_validation_steps = 100
 siamese_epochs = 25
 logfile = 'train.log'

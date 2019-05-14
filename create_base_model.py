@@ -10,6 +10,7 @@ from tensorflow.keras.layers import Dense, Activation, Flatten, GlobalAveragePoo
     Concatenate, Lambda, Conv2D, MaxPooling2D, Dropout, BatchNormalization, Input
 from tensorflow.keras import backend as K
 from tensorflow.keras.utils import to_categorical
+from tensorflow.keras.optimizers import SGD
 
 from generators import Singlet
 import config as C
@@ -147,7 +148,7 @@ def train_base_model(model, train_generator, val_generator ):
     x = model(inp)
     predictions = Dense(C.n_classes, activation='softmax', name="output")(x)
     trainable_model = Model(inputs=inp, outputs=predictions)
-    trainable_model.compile(optimizer='rmsprop',
+    trainable_model.compile(optimizer=SGD(lr=C.base_learn_rate, momentum=0.9),
                             loss="sparse_categorical_crossentropy",
                             metrics=["accuracy"])
     history = trainable_model.fit_generator(train_generator,

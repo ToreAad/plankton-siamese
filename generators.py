@@ -131,9 +131,9 @@ class Singlet(Sequence):
             #     len(image_paths), self.min_n)
             self.images.append(image_paths)
         self.seeded = False
-        self.X = {}
-        self.y = {}
-        self.load_epoch()
+        # self.X = {}
+        # self.y = {}
+        self.on_epoch_end()
 
     def paste(self, i, img):
         (x, y) = img.shape
@@ -159,72 +159,60 @@ class Singlet(Sequence):
             #return self.get_image(image_path)
 
 
-    def load_epoch(self):
+    def on_epoch_end(self):
         if not self.seeded:
             rn.seed(int(time.time()*10000000) % 1000000007)
             np.random.seed(int(time.time()*10000000) % 1000000007)
             self.seeded = True
 
-        for i in range(len(self)):
-            images = np.ones((self.batch_size, *C.in_dim))
-            labels = []
-            for blank_img in images:
-                label = random.randint(0, len(self.classes)-1)
-                random_choice = random.randint(0, len(self.images[label])-1) #random.randint(0, self.min_n-1)
-                image_path = self.images[label][random_choice]
-                image = self.get_image(image_path)
-                labels.append(label)
-                self.paste(blank_img, image)
-            self.X[i] = np.asarray(images)
-            self.y[i] = np.asarray(labels)
-
-    def on_epoch_end(self):
-        self.load_epoch()
 
     def __len__(self):
         return self.steps_per_epoch
 
+
     def __getitem__(self, idx):
-        return (self.X[idx], self.y[idx])
+        images = np.ones((self.batch_size, *C.in_dim))
+        labels = []
+        for blank_img in images:
+            label = random.randint(0, len(self.classes)-1)
+            random_choice = random.randint(0, len(self.images[label])-1) #random.randint(0, self.min_n-1)
+            image_path = self.images[label][random_choice]
+            image = self.get_image(image_path)
+            labels.append(label)
+            self.paste(blank_img, image)
+        return (np.asarray(images), np.asarray(labels))
 
 
 class Triplet(Singlet):
-    def load_epoch(self):
-        if not self.seeded:
-            rn.seed(int(time.time()*10000000) % 1000000007)
-            np.random.seed(int(time.time()*10000000) % 1000000007)
-            self.seeded = True
+    def __getitem__(self, idx):
+        a_img = np.ones((self.batch_size, *C.in_dim))
+        p_img = np.ones((self.batch_size, *C.in_dim))
+        n_img = np.ones((self.batch_size, *C.in_dim))
+        labels = []
+        for j in range(self.batch_size):
+            pos_class = random.randint(0, len(self.classes)-1)
+            neg_class = random.randint(0, len(self.classes)-2)
+            if neg_class >= pos_class:
+                neg_class = neg_class + 1
+            
+            a_random_choice = random.randint(0, len(self.images[pos_class])-1)
+            p_random_choice = random.randint(0, len(self.images[pos_class])-1)
+            n_random_choice = random.randint(0, len(self.images[neg_class])-1)
 
-        for i in range(len(self)):
-            a_img = np.ones((self.batch_size, *C.in_dim))
-            p_img = np.ones((self.batch_size, *C.in_dim))
-            n_img = np.ones((self.batch_size, *C.in_dim))
-            labels = []
-            for j in range(self.batch_size):
-                pos_class = random.randint(0, len(self.classes)-1)
-                neg_class = random.randint(0, len(self.classes)-2)
-                if neg_class >= pos_class:
-                    neg_class = neg_class + 1
-                
-                a_random_choice = random.randint(0, len(self.images[pos_class])-1)
-                p_random_choice = random.randint(0, len(self.images[pos_class])-1)
-                n_random_choice = random.randint(0, len(self.images[neg_class])-1)
+            a_image_path = self.images[pos_class][a_random_choice]
+            p_image_path = self.images[pos_class][p_random_choice]
+            n_image_path = self.images[neg_class][n_random_choice]
 
-                a_image_path = self.images[pos_class][a_random_choice]
-                p_image_path = self.images[pos_class][p_random_choice]
-                n_image_path = self.images[neg_class][n_random_choice]
+            a_image = self.get_image(a_image_path)
+            p_image = self.get_image(p_image_path)
+            n_image = self.get_image(n_image_path)
 
-                a_image = self.get_image(a_image_path)
-                p_image = self.get_image(p_image_path)
-                n_image = self.get_image(n_image_path)
-
-                self.paste(a_img[j], a_image)
-                self.paste(p_img[j], p_image)
-                self.paste(n_img[j], n_image)
-                labels.append((pos_class, neg_class))
-                
-            self.X[i] = [a_img, p_img, n_img]
-            self.y[i] = np.asarray(labels)
+            self.paste(a_img[j], a_image)
+            self.paste(p_img[j], p_image)
+            self.paste(n_img[j], n_image)
+            labels.append((pos_class, neg_class))
+            
+        return( [a_img, p_img, n_img], np.asarray(labels))
 
 # Testing:
 if __name__ == "__main__":
@@ -234,9 +222,8 @@ if __name__ == "__main__":
     for i in range(9):
         image, label = train_generator[i]
         for j in image:
-            pass
-            # plt.imshow(j[:, :, 0])
-            # plt.show()
+            plt.imshow(j[:, :, 0])
+            plt.show()
 
     print("### Testing Triplet generator class ###")
     train_generator = Triplet(
