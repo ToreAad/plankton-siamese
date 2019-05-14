@@ -5,9 +5,9 @@ from sklearn.metrics import confusion_matrix
 
 from tensorflow.keras.applications.inception_v3 import InceptionV3
 from tensorflow.keras.callbacks import CSVLogger
-from tensorflow.keras.models import Sequential, Model, Input, load_model
+from tensorflow.keras.models import Sequential, Model, load_model
 from tensorflow.keras.layers import Dense, Activation, Flatten, GlobalAveragePooling2D, \
-    Concatenate, Lambda, Conv2D, MaxPooling2D, Dropout, BatchNormalization
+    Concatenate, Lambda, Conv2D, MaxPooling2D, Dropout, BatchNormalization, Input
 from tensorflow.keras import backend as K
 from tensorflow.keras.utils import to_categorical
 
