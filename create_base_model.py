@@ -1,7 +1,11 @@
 import os
 import matplotlib.pyplot as plt
 import numpy as np
+
+import pickle
+
 from sklearn.metrics import confusion_matrix
+
 
 from tensorflow.keras.applications.inception_v3 import InceptionV3
 from tensorflow.keras.callbacks import CSVLogger
@@ -72,77 +76,6 @@ def initialize_base_model():
         return load_model(model_path(C.base_model))
 
 
-def plot_history(outputfolder, history):
-    plt.figure(figsize=(10, 5))
-    plt.subplot(1, 2, 1)
-    plt.plot(history.history['loss'], label='Training data loss')
-    plt.plot(history.history['val_loss'], label='Validation data loss')
-    plt.legend()
-    plt.title("Loss")
-
-    plt.subplot(1, 2, 2)
-    plt.plot(history.history['acc'], label='Training data accuracy')
-    plt.plot(history.history['val_acc'], label='Validation data accuracy')
-    plt.legend()
-    plt.title("Accuracy")
-    plt.suptitle("Model performance - {}".format(C.base_model))
-
-    plt.savefig(os.path.join(outputfolder, 'model_history.png'))
-    plt.show()
-
-
-def print_summary(outputfolder, model, val_generator):
-    score = model.evaluate_generator(
-        val_generator, steps=C.base_validation_steps)
-    summary = "Validation loss: {}\nValidation accuracy: {}".format(
-        score[0], score[1])
-    print(summary)
-    with open(os.path.join(outputfolder, 'model_score.txt'), 'w+') as f:
-        f.write(summary)
-
-
-def plot_confusion_matrix(outputfolder, model, val_generator):
-    img_vals = []
-    stat_vals = []
-    y_vals = []
-    for i in range(C.base_validation_steps):
-        x, y = val_generator[i]
-        if len(x) == 2:
-            img_vals.append(x[0])
-            stat_vals.append(x[1])
-        else:
-            img_vals.append(x)
-        y_vals.append(y)
-    if stat_vals:
-        X_validation = [np.concatenate(img_vals), np.concatenate(stat_vals)]
-    else:
-        X_validation = [np.concatenate(img_vals)]
-    y_target = np.concatenate(y_vals)
-    y_predicted = np.argmax(model.predict(X_validation), axis=1)
-    cm = confusion_matrix(y_target, y_predicted)
-    for i in range(len(cm)):
-        cm[i, i] = 0
-
-    plt.figure(figsize=(15, 15))
-    plt.imshow(cm, cmap="Greys")
-    plt.xticks(range(max(y_target+1)))
-    plt.yticks(range(max(y_target+1)))
-    plt.title("Confusion matrix")
-    plt.xlabel("True label")
-    plt.ylabel("Predicted label")
-    plt.savefig(os.path.join(outputfolder, 'model_confusion_matrix.png'))
-    plt.show()
-
-
-def visualize_training(history, model, val_generator, iteration=""):
-    outputfolder = C.base_model
-    if not os.path.exists(outputfolder):
-        os.makedirs(outputfolder)
-    plot_history(outputfolder, history)
-    print_summary(outputfolder, model, val_generator)
-    plot_confusion_matrix(outputfolder, model, val_generator)
-
-
 def train_base_model(model, train_generator, val_generator ):
     inp = Input(shape=C.in_dim)
     x = model(inp)
@@ -173,9 +106,12 @@ def main():
         batch_size=C.siamese_batch_size, directory=C.val_dir, steps_per_epoch=C.base_validation_steps)
     print("Training model")
     history, trainable_model = train_base_model(model, train_generator, val_generator)
+    pickle.dump(history, open(C.base_model+"_history", "wb"))
+    
     model.save(model_path(C.base_model))
-    print("Visualizing training")
-    visualize_training(history, trainable_model, val_generator)
+    trainable_model.save(model_path("trained_"+C.base_model))
+    #print("Visualizing training")
+    #visualize_training(history, trainable_model, val_generator)
     
 
 if __name__ == "__main__":
