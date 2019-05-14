@@ -3,13 +3,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import confusion_matrix
 
-from keras.applications.inception_v3 import InceptionV3
-from keras.callbacks import CSVLogger
-from keras.models import Sequential, Model, Input, load_model
-from keras.layers import Dense, Activation, Flatten, GlobalAveragePooling2D, \
+from tensorflow.keras.applications.inception_v3 import InceptionV3
+from tensorflow.keras.callbacks import CSVLogger
+from tensorflow.keras.models import Sequential, Model, Input, load_model
+from tensorflow.keras.layers import Dense, Activation, Flatten, GlobalAveragePooling2D, \
     Concatenate, Lambda, Conv2D, MaxPooling2D, Dropout, BatchNormalization
-from keras import backend as K
-from keras.utils import to_categorical
+from tensorflow.keras import backend as K
+from tensorflow.keras.utils import to_categorical
 
 from generators import Singlet
 import config as C
