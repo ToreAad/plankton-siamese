@@ -12,6 +12,8 @@ import redis
 
 from tensorflow.keras.utils import Sequence
 
+from read_hierarchy import taxonomic_distance
+
 
 # from image_cache import toRedis, fromRedis
 import config as C
@@ -206,6 +208,39 @@ class Triplet(Singlet):
             labels.append((pos_class, neg_class))
             
         return( [a_img, p_img, n_img], np.asarray(labels))
+
+
+class HierarchyTriplet(Singlet):
+    def __getitem__(self, idx):
+        a_img = np.ones((self.batch_size, *C.in_dim))
+        p_img = np.ones((self.batch_size, *C.in_dim))
+        n_img = np.ones((self.batch_size, *C.in_dim))
+        distances = []
+        for j in range(self.batch_size):
+            pos_class = random.randint(0, len(self.classes)-1)
+            neg_class = random.randint(0, len(self.classes)-2)
+            if neg_class >= pos_class:
+                neg_class = neg_class + 1
+            
+            a_random_choice = random.randint(0, len(self.images[pos_class])-1)
+            p_random_choice = random.randint(0, len(self.images[pos_class])-1)
+            n_random_choice = random.randint(0, len(self.images[neg_class])-1)
+
+            a_image_path = self.images[pos_class][a_random_choice]
+            p_image_path = self.images[pos_class][p_random_choice]
+            n_image_path = self.images[neg_class][n_random_choice]
+
+            a_image = self.get_image(a_image_path)
+            p_image = self.get_image(p_image_path)
+            n_image = self.get_image(n_image_path)
+
+            self.paste(a_img[j], a_image)
+            self.paste(p_img[j], p_image)
+            self.paste(n_img[j], n_image)
+            distances.append(taxonomic_distance(pos_class, neg_class))
+            
+        return( [a_img, p_img, n_img], np.asarray(distances))
+
 
 # Testing:
 if __name__ == "__main__":
