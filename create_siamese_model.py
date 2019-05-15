@@ -76,6 +76,7 @@ def log(s):
 
 
 def train_siamese_model(model, train_generator, val_generator):
+    print("Starting to train")
     model.compile(optimizer=SGD(lr=C.learn_rate, momentum=0.9),
                   loss=std_triplet_loss())
 
@@ -84,8 +85,8 @@ def train_siamese_model(model, train_generator, val_generator):
         epochs=C.siamese_epochs,
         callbacks=[
             CSVLogger("history_siamese_"+C.base_model),
-            ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=10, verbose=1),
-            EarlyStopping(monitor='val_loss', patience=20, verbose=1)
+            ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=5, verbose=1),
+            EarlyStopping(monitor='val_loss', patience=10, verbose=1)
         ],
         validation_data=val_generator)
 

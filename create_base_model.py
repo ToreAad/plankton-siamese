@@ -59,7 +59,7 @@ def get_inception_model():
 
     tmp = GlobalAveragePooling2D()(base_model)
 
-    return Model(inputs=base_model.input, outputs=tmp)
+    return Model(inputs=inp, outputs=tmp)
 
 def initialize_base_model():
     if not os.path.exists('models'):
