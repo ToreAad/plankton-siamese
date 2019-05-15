@@ -92,6 +92,17 @@ def train_siamese_model(model, train_generator, val_generator):
 
     return history
 
+from keras import models
+
+def freeze(model):
+    """Freeze model weights in every layer."""
+    for layer in model.layers:
+        layer.trainable = False
+
+        if isinstance(layer, models.Model):
+            freeze(layer)
+    return model
+
 
 def main():
     bitvector_model = initialize_bitvector_model()
@@ -103,8 +114,8 @@ def main():
     train_siamese_model(
         siamese_model, train_generator, val_generator)
     
-    bitvector_model.save(model_path("bitvector_"+C.base_model))
-    siamese_model.save(model_path("siamese_"+C.base_model))
+    freeze(bitvector_model).save(model_path("bitvector_"+C.base_model))
+    freeze(siamese_model).save(model_path("siamese_"+C.base_model))
 
 
 if __name__ == "__main__":
