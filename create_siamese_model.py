@@ -92,7 +92,7 @@ def train_siamese_model(model, train_generator, val_generator):
 
     return history
 
-from tf.keras import models
+from tensorflow.keras import models
 
 def freeze(model):
     """Freeze model weights in every layer."""
@@ -101,7 +101,7 @@ def freeze(model):
 
         if isinstance(layer, models.Model):
             freeze(layer)
-
+    return model
 
 def main():
     bitvector_model = initialize_bitvector_model()
@@ -113,8 +113,7 @@ def main():
     train_siamese_model(
         siamese_model, train_generator, val_generator)
     
-    freeze(bitvector_model)
-    bitvector_model.save(model_path("bitvector_"+C.base_model))
+    freeze(bitvector_model).save(model_path("bitvector_"+C.base_model))
     #freeze(siamese_model).save(model_path("siamese_"+C.base_model))
 
 
