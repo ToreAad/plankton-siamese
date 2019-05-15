@@ -149,14 +149,7 @@ class Singlet(Sequence):
             with open(image_path, "rb") as binary_file:
                 encoded = binary_file.read()
                 self.r.set(image_path, encoded)
-
-        try:
-            return np.array(Image.open(BytesIO(encoded)), dtype=np.float64)/256
-        except:
-            print("failed to store {}".format(image_path))
-            return
-            #self.r.delete(image_path)
-            #return self.get_image(image_path)
+        return np.array(Image.open(BytesIO(encoded)), dtype=np.float64)/256
 
 
     def on_epoch_end(self):

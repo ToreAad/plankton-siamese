@@ -84,7 +84,7 @@ def train_base_model(model, train_generator, val_generator ):
     trainable_model.compile(optimizer=SGD(lr=C.base_learn_rate, momentum=0.9),
                             loss="sparse_categorical_crossentropy",
                             metrics=["accuracy"])
-    history = trainable_model.fit_generator(train_generator,
+    trainable_model.fit_generator(train_generator,
                                             validation_data=val_generator,
                                             validation_steps=C.base_validation_steps,
                                             epochs=C.base_epochs,
@@ -92,8 +92,8 @@ def train_base_model(model, train_generator, val_generator ):
                                             workers=4,
                                             callbacks=[
                                                 CSVLogger("history_trained_"+C.base_model),
-                                                ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=10, verbose=1),
-                                                EarlyStopping(monitor='val_loss', patience=20, verbose=1)
+                                                ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=5, verbose=1),
+                                                EarlyStopping(monitor='val_loss', patience=10, verbose=1)
                                             ])
     return trainable_model
 
