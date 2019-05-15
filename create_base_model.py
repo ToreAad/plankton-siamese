@@ -7,9 +7,10 @@ import pickle
 from sklearn.metrics import confusion_matrix
 
 
+from tensorflow.keras import models
 from tensorflow.keras.applications.inception_v3 import InceptionV3
 from tensorflow.keras.callbacks import CSVLogger, ReduceLROnPlateau, EarlyStopping
-from tensorflow.keras.models import Sequential, Model, load_model, models
+from tensorflow.keras.models import Sequential, Model, load_model 
 from tensorflow.keras.layers import Dense, Activation, Flatten, GlobalAveragePooling2D, \
     Concatenate, Lambda, Conv2D, MaxPooling2D, Dropout, BatchNormalization, Input
 from tensorflow.keras import backend as K
