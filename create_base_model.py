@@ -9,7 +9,7 @@ from sklearn.metrics import confusion_matrix
 
 from tensorflow.keras.applications.inception_v3 import InceptionV3
 from tensorflow.keras.callbacks import CSVLogger, ReduceLROnPlateau, EarlyStopping
-from tensorflow.keras.models import Sequential, Model, load_model
+from tensorflow.keras.models import Sequential, Model, load_model, models
 from tensorflow.keras.layers import Dense, Activation, Flatten, GlobalAveragePooling2D, \
     Concatenate, Lambda, Conv2D, MaxPooling2D, Dropout, BatchNormalization, Input
 from tensorflow.keras import backend as K
@@ -19,6 +19,14 @@ from tensorflow.keras.optimizers import SGD
 from generators import Singlet
 import config as C
 
+def freeze(model):
+    """Freeze model weights in every layer."""
+    for layer in model.layers:
+        layer.trainable = False
+
+        if isinstance(layer, models.Model):
+            freeze(layer)
+    return model
 
 def model_path(name):
     return 'models/'+ name +'.model'
@@ -108,9 +116,8 @@ def main():
     print("Training model")
     trainable_model = train_base_model(model, train_generator, val_generator)
     model.save(model_path(C.base_model))
-    trainable_model.save(model_path("trained_"+C.base_model))
+    freeze(trainable_model).save(model_path("trained_"+C.base_model))
 
-    
 
 if __name__ == "__main__":
     main()
