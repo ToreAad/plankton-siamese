@@ -57,7 +57,7 @@ def get_inception_model():
 
     base_model = InceptionV3(weights='imagenet', include_top=False)(x1)
 
-    tmp = GlobalAveragePooling2D()(base_model.output)
+    tmp = GlobalAveragePooling2D()(base_model)
 
     return Model(inputs=base_model.input, outputs=tmp)
 
