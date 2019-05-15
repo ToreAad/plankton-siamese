@@ -8,7 +8,7 @@ from sklearn.metrics import confusion_matrix
 
 
 from tensorflow.keras.applications.inception_v3 import InceptionV3
-from tensorflow.keras.callbacks import CSVLogger
+from tensorflow.keras.callbacks import CSVLogger, ReduceLROnPlateau, EarlyStopping
 from tensorflow.keras.models import Sequential, Model, load_model
 from tensorflow.keras.layers import Dense, Activation, Flatten, GlobalAveragePooling2D, \
     Concatenate, Lambda, Conv2D, MaxPooling2D, Dropout, BatchNormalization, Input
@@ -91,10 +91,11 @@ def train_base_model(model, train_generator, val_generator ):
                                             steps_per_epoch=len(train_generator),
                                             workers=4,
                                             callbacks=[
-                                                CSVLogger(
-                                                    C.logfile, append=True, separator='\t')
+                                                CSVLogger("history_trained_"+C.base_model),
+                                                ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=10, verbose=1),
+                                                EarlyStopping(monitor='val_loss', patience=20, verbose=1)
                                             ])
-    return history, trainable_model
+    return trainable_model
 
 
 def main():
@@ -105,17 +106,10 @@ def main():
     val_generator = Singlet(
         batch_size=C.siamese_batch_size, directory=C.val_dir, steps_per_epoch=C.base_validation_steps)
     print("Training model")
-    history, trainable_model = train_base_model(model, train_generator, val_generator)
-    
-    
+    trainable_model = train_base_model(model, train_generator, val_generator)
     model.save(model_path(C.base_model))
     trainable_model.save(model_path("trained_"+C.base_model))
-    h = {}
-    h["loss"] = history["loss"]
-    h["accuracy"] = history["accuracy"]
-    pickle.dump(h, open(C.base_model+"_history", "wb"))
-    #print("Visualizing training")
-    #visualize_training(history, trainable_model, val_generator)
+
     
 
 if __name__ == "__main__":

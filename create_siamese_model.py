@@ -3,7 +3,7 @@ import pickle
 
 from tensorflow.keras.models import Model, load_model
 from tensorflow.keras.layers import Concatenate, Dense, BatchNormalization, Input
-from tensorflow.keras.callbacks import CSVLogger
+from tensorflow.keras.callbacks import CSVLogger, ReduceLROnPlateau, EarlyStopping
 from tensorflow.keras import backend as K
 from tensorflow.keras.optimizers import SGD
 
@@ -83,7 +83,9 @@ def train_siamese_model(model, train_generator, val_generator):
         train_generator,
         epochs=C.siamese_epochs,
         callbacks=[
-            CSVLogger(C.logfile, append=True, separator='\t')
+            CSVLogger("history_siamese_"+C.base_model),
+            ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=10, verbose=1),
+            EarlyStopping(monitor='val_loss', patience=20, verbose=1)
         ],
         validation_data=val_generator)
 
@@ -97,14 +99,11 @@ def main():
         batch_size=C.siamese_batch_size, directory=C.train_dir, steps_per_epoch=C.siamese_steps_per_epoch)
     val_generator = Triplet(
         batch_size=C.siamese_batch_size, directory=C.val_dir, steps_per_epoch=C.siamese_validation_steps)
-    history = train_siamese_model(
+    train_siamese_model(
         siamese_model, train_generator, val_generator)
     
     bitvector_model.save(model_path("bitvector_"+C.base_model))
     siamese_model.save(model_path("siamese_"+C.base_model))
-    h = {}
-    h["loss"] = history["loss"]
-    pickle.dump(h, open("siamese_"+C.base_model+"_history", "wb"))
 
 
 if __name__ == "__main__":
