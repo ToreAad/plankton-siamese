@@ -39,12 +39,11 @@ def get_distance(tree, a, b):
     depth = 0
     for p1, p2 in zip(path_to_a, path_to_b):
         if p1 != p2:
-            return depth
+            break
         depth += 1
     
-    if path_to_a == path_to_b:
-        return depth
-
+    return depth
+    
 
 
         

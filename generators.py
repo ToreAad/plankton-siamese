@@ -261,23 +261,23 @@ class HierarchyTriplet(Singlet):
                 if c_class >= b_class:
                     c_class += 1
                 
-                d_ab = taxonomic_distance(a, b)
-                d_bc = taxonomic_distance(b, c)
-                d_ac = taxonomic_distance(a, c)
+                d_ab = taxonomic_distance(a_class, b_class)
+                d_bc = taxonomic_distance(b_class, c_class)
+                d_ac = taxonomic_distance(a_class, c_class)
 
                 if d_ab == d_bc and d_ab == d_ac:
                     continue
                 else:
                     min_distance = min([d_ab, d_bc, d_ac])
-                    if d_ab < d_bc and d_ab < d_ac:
+                    if d_ab == min_distance:
                         an_class = a_class
                         pos_class = b_class
                         neg_class = c_class
-                    elif d_bc < d_ab and d_bc < d_ac:
+                    elif d_bc == min_distance:
                         an_class = b_class
                         pos_class = c_class
                         neg_class = a_class
-                    elif d_ac < d_ab and d_ac < d_bc:
+                    elif d_ac == min_distance:
                         an_class = a_class
                         pos_class = c_class
                         neg_class = b_class
@@ -303,7 +303,8 @@ class HierarchyTriplet(Singlet):
         return( [a_img, p_img, n_img], np.asarray(distances))
 
     def __getitem__(self, idx):
-        return self.contract_class()
+        #return self.contract_class()
+        return self.contract_supclass()
         # if np.random.random_sample() < 2.0:
         #     return self.contract_class()
         # else:
