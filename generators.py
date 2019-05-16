@@ -249,26 +249,24 @@ class HierarchyTriplet(Singlet):
         for j in range(self.batch_size):
             while True:
                 a_class = random.randint(0, len(self.classes)-1)
-                b_class = random.randint(0, len(self.classes)-2)
-                c_class = random.randint(0, len(self.classes)-3)
+                b_class = random.randint(0, len(self.classes)-1)
+                c_class = random.randint(0, len(self.classes)-2)
                 
-                if b_class >= a_class:
-                    b_class += 1
-                
-                if c_class >= a_class:
-                    c_class += 1
-
-                if c_class >= b_class:
+                if a_class == b_class and a_class == c_class:
                     c_class += 1
                 
                 d_ab = taxonomic_distance(a_class, b_class)
                 d_bc = taxonomic_distance(b_class, c_class)
                 d_ac = taxonomic_distance(a_class, c_class)
 
+                max_distance = min([d_ab, d_bc, d_ac])
+                min_distance = max([d_ab, d_bc, d_ac])
+
                 if d_ab == d_bc and d_ab == d_ac:
-                    continue
+                    an_class = a_class
+                    pos_class = b_class
+                    neg_class = c_class
                 else:
-                    min_distance = min([d_ab, d_bc, d_ac])
                     if d_ab == min_distance:
                         an_class = a_class
                         pos_class = b_class
@@ -298,13 +296,13 @@ class HierarchyTriplet(Singlet):
             self.paste(a_img[j], a_image)
             self.paste(p_img[j], p_image)
             self.paste(n_img[j], n_image)
-            distances.append(min_distance)
+            distances.append(max_distance)
             
         return( [a_img, p_img, n_img], np.asarray(distances))
 
     def __getitem__(self, idx):
         #return self.contract_class()
-        # return self.contract_supclass()
+        #return self.contract_supclass()
         if np.random.random_sample() < 0.5:
             return self.contract_class()
         else:
