@@ -109,7 +109,7 @@ def train_siamese_model(model, train_generator, val_generator, loss_function=std
 
     return history
 
-def hierachy_main():
+def hierarchy_main():
     bitvector_model = initialize_bitvector_model()
     siamese_model = tripletize(bitvector_model)
     train_generator = HierarchyTriplet(
@@ -134,4 +134,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    hierarchy_main()

@@ -74,6 +74,7 @@ def get_grouping(tree, target_depth):
                 return grouping
 
     grouping_helper(tree, 0)
+    sets = [s for s in sets if s]
     groups = {}
     for i, g in enumerate(sets):
         for n in g:
@@ -87,7 +88,13 @@ def taxonomic_distance(a, b):
     return get_distance(tree, a, b)
 
 def taxonomic_grouping(depth):
-    return get_grouping(tree, depth)
+    groups, sets = get_grouping(tree, depth)
+    int_groups = [[plankton_str2int[e] for e in g] for g in groups]
+    int_sets = {}
+    for key, val in sets.items():
+        int_sets[plankton_str2int[key]] = val
+    return int_groups, int_sets
+    
 
 if __name__ == "__main__":
     _, tree = get_hierarchy()
