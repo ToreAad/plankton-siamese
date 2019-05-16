@@ -55,12 +55,12 @@ def get_hierarchy():
         
 
 def get_grouping(tree, target_depth):
-    sets = []
+    parents = {}
     def grouping_helper(tree, depth):
         node, children = tree
         if depth < target_depth:
             if node in plankton_str2int.keys():
-                sets.append([node])
+                parents[node] = node
             for child in children:
                 grouping_helper(child, depth+1)
         else:
@@ -68,18 +68,20 @@ def get_grouping(tree, target_depth):
             for child in children:
                 grouping += grouping_helper(child, depth+1)
             if depth == target_depth:
-                sets.append(grouping)
+                for n in grouping:
+                    parents[n] = node
                 return
             else:
                 return grouping
 
     grouping_helper(tree, 0)
-    sets = [s for s in sets if s]
-    groups = {}
-    for i, g in enumerate(sets):
-        for n in g:
-            groups[n] = i
-    return sets, groups
+    children = {}
+    for child, parent in parents.items():
+        if parent in children:
+            children[parent].append(child)
+        else:
+            children[parent] = [child]
+    return parents, children
 
 _, tree = get_hierarchy()
 def taxonomic_distance(a, b):
@@ -88,12 +90,17 @@ def taxonomic_distance(a, b):
     return get_distance(tree, a, b)
 
 def taxonomic_grouping(depth):
-    groups, sets = get_grouping(tree, depth)
-    int_groups = [[plankton_str2int[e] for e in g] for g in groups]
-    int_sets = {}
-    for key, val in sets.items():
-        int_sets[plankton_str2int[key]] = val
-    return int_groups, int_sets
+    parents, _ = get_grouping(tree, depth)
+    int_parents = {}
+
+    counter = 0
+    get_count = {}
+    for key, val in parents.items():
+        if not val in get_count:
+            get_count[val] = counter
+            counter += 1
+        int_parents[plankton_str2int[key]] = (get_count[val], val)
+    return int_parents
     
 
 if __name__ == "__main__":
@@ -102,8 +109,5 @@ if __name__ == "__main__":
     assert get_distance(tree, "Noctiluca", "Tomopteridae") == 2
     assert get_distance(tree, "Limacidae", "egg__other") == 1
 
-    sets, groups = get_grouping(tree, 0)
-    [print(s) for s in sorted(sets[0])]
-    sets, groups = get_grouping(tree, 1)
-    sets, groups = get_grouping(tree, 2)
-    sets, groups = get_grouping(tree, 3)
+    for i in range(10):
+        test = taxonomic_grouping(i)

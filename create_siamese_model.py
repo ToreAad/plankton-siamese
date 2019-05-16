@@ -65,7 +65,7 @@ def std_triplet_loss(alpha=5):
 
     return myloss
 
-def hierarchy_triplet_loss(alpha=5):
+def hierarchy_triplet_loss(alpha=10):
     """
     Basic triplet loss.
     Note, due to the K.maximum, this learns nothing when dneg>dpos+alpha
@@ -77,10 +77,9 @@ def hierarchy_triplet_loss(alpha=5):
         neg = y_pred[:, C.out_dim*2:C.out_dim*3]
         pos_dist = K.sum(K.square(anchor-pos), axis=1)
         neg_dist = K.sum(K.square(anchor-neg), axis=1)
-        basic_loss = pos_dist - neg_dist + alpha/y_true
+        basic_loss = pos_dist - neg_dist + alpha-(y_true/2.0)
         loss = K.maximum(basic_loss, 0.0)
         return loss
-
     return myloss
 
 def avg(x):

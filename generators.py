@@ -211,7 +211,7 @@ class Triplet(Singlet):
 
 
 class HierarchyTriplet(Singlet):
-    def __getitem__(self, idx):
+    def contract_class(self):
         a_img = np.ones((self.batch_size, *C.in_dim))
         p_img = np.ones((self.batch_size, *C.in_dim))
         n_img = np.ones((self.batch_size, *C.in_dim))
@@ -240,6 +240,74 @@ class HierarchyTriplet(Singlet):
             distances.append(taxonomic_distance(pos_class, neg_class))
             
         return( [a_img, p_img, n_img], np.asarray(distances))
+    
+    def contract_supclass(self):
+        a_img = np.ones((self.batch_size, *C.in_dim))
+        p_img = np.ones((self.batch_size, *C.in_dim))
+        n_img = np.ones((self.batch_size, *C.in_dim))
+        distances = []
+        for j in range(self.batch_size):
+            while True:
+                a_class = random.randint(0, len(self.classes)-1)
+                b_class = random.randint(0, len(self.classes)-2)
+                c_class = random.randint(0, len(self.classes)-3)
+                
+                if b_class >= a_class:
+                    b_class += 1
+                
+                if c_class >= a_class:
+                    c_class += 1
+
+                if c_class >= b_class:
+                    c_class += 1
+                
+                d_ab = taxonomic_distance(a, b)
+                d_bc = taxonomic_distance(b, c)
+                d_ac = taxonomic_distance(a, c)
+
+                if d_ab == d_bc and d_ab == d_ac:
+                    continue
+                else:
+                    min_distance = min([d_ab, d_bc, d_ac])
+                    if d_ab < d_bc and d_ab < d_ac:
+                        an_class = a_class
+                        pos_class = b_class
+                        neg_class = c_class
+                    elif d_bc < d_ab and d_bc < d_ac:
+                        an_class = b_class
+                        pos_class = c_class
+                        neg_class = a_class
+                    elif d_ac < d_ab and d_ac < d_bc:
+                        an_class = a_class
+                        pos_class = c_class
+                        neg_class = b_class
+                    break
+            
+            a_random_choice = random.randint(0, len(self.images[an_class])-1)
+            p_random_choice = random.randint(0, len(self.images[pos_class])-1)
+            n_random_choice = random.randint(0, len(self.images[neg_class])-1)
+
+            a_image_path = self.images[an_class][a_random_choice]
+            p_image_path = self.images[pos_class][p_random_choice]
+            n_image_path = self.images[neg_class][n_random_choice]
+
+            a_image = self.get_image(a_image_path)
+            p_image = self.get_image(p_image_path)
+            n_image = self.get_image(n_image_path)
+
+            self.paste(a_img[j], a_image)
+            self.paste(p_img[j], p_image)
+            self.paste(n_img[j], n_image)
+            distances.append(min_distance)
+            
+        return( [a_img, p_img, n_img], np.asarray(distances))
+
+    def __getitem__(self, idx):
+        return self.contract_class()
+        # if np.random.random_sample() < 2.0:
+        #     return self.contract_class()
+        # else:
+        #     return self.contract_supclass()
 
 
 # Testing:
