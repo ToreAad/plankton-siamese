@@ -22,7 +22,7 @@ def initialize_bitvector_model():
         os.makedirs('models')
 
     path = model_path("bitvector_"+C.base_model)
-    if not os.path.exists(path):
+    if True: #not os.path.exists(path):
         print('Creating bitvector network from scratch.')
         model = initialize_base_model()
         m_in = Input(shape=C.in_dim)
