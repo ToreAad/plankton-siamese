@@ -86,6 +86,9 @@ def taxonomic_distance(a, b):
     b = plankton_int2str[b]
     return get_distance(tree, a, b)
 
+def taxonomic_grouping(depth):
+    return get_grouping(tree, depth)
+
 if __name__ == "__main__":
     _, tree = get_hierarchy()
     assert get_distance(tree, "Neoceratium", "Noctiluca") == 7
