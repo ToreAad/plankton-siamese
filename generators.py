@@ -304,11 +304,11 @@ class HierarchyTriplet(Singlet):
 
     def __getitem__(self, idx):
         #return self.contract_class()
-        return self.contract_supclass()
-        # if np.random.random_sample() < 2.0:
-        #     return self.contract_class()
-        # else:
-        #     return self.contract_supclass()
+        # return self.contract_supclass()
+        if np.random.random_sample() < 0.5:
+            return self.contract_class()
+        else:
+            return self.contract_supclass()
 
 
 # Testing:
