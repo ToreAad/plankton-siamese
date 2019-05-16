@@ -65,22 +65,22 @@ def std_triplet_loss(alpha=5):
 
     return myloss
 
-def hierarchy_triplet_loss(alpha=10):
+def hierarchy_triplet_loss(alpha=5):
     """
     Basic triplet loss.
     Note, due to the K.maximum, this learns nothing when dneg>dpos+alpha
     """
     # split the prediction vector
-    def myloss(y_true, y_pred):
+    def hierarchyLoss(y_true, y_pred):
         anchor = y_pred[:, 0:C.out_dim]
         pos = y_pred[:, C.out_dim:C.out_dim*2]
         neg = y_pred[:, C.out_dim*2:C.out_dim*3]
         pos_dist = K.sum(K.square(anchor-pos), axis=1)
         neg_dist = K.sum(K.square(anchor-neg), axis=1)
-        basic_loss = pos_dist - neg_dist + (alpha/y_true)
+        basic_loss = pos_dist - neg_dist + (13 - y_true)
         loss = K.maximum(basic_loss, 0.0)
         return loss
-    return myloss
+    return hierarchyLoss
 
 def avg(x):
     return sum(x)/len(x)
@@ -112,15 +112,15 @@ def train_siamese_model(model, train_generator, val_generator, loss_function=std
 def train_hierarchy_siamese_model(model, train_generator, val_generator, loss_function=std_triplet_loss):
     print("Starting to train")
     model.compile(optimizer=SGD(lr=C.learn_rate, momentum=0.9),
-                  loss=loss_function(), metrics=[loss_function(), std_triplet_loss()])
+                  loss=loss_function(), metrics=[std_triplet_loss()])
 
     history = model.fit_generator(
         train_generator,
         epochs=C.siamese_epochs,
         callbacks=[
             CSVLogger("history_siamese_"+C.base_model),
-            ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=3, verbose=1),
-            EarlyStopping(monitor='val_loss', patience=10, verbose=1)
+            ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=1, verbose=1),
+            EarlyStopping(monitor='val_loss', patience=5, verbose=1)
         ],
         validation_data=val_generator,)
 
@@ -134,8 +134,8 @@ def hierarchy_main():
     val_generator = HierarchyTriplet(
         batch_size=C.siamese_batch_size, directory=C.val_dir, steps_per_epoch=C.siamese_validation_steps)
     train_hierarchy_siamese_model(
-        siamese_model, train_generator, val_generator, lambda : hierarchy_triplet_loss(10))
-    freeze(bitvector_model).save(model_path("hierachy_bitvector_"+C.base_model))
+        siamese_model, train_generator, val_generator, hierarchy_triplet_loss)
+    freeze(bitvector_model).save(model_path("hierachy_bitvector2_"+C.base_model))
 
 def main():
     bitvector_model = initialize_bitvector_model()
