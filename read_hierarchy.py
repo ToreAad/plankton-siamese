@@ -42,11 +42,9 @@ def get_distance(tree, a, b):
             break
         depth += 1
     
-    return depth
+    return 13-depth
     
 
-
-        
 def get_hierarchy():
     with open("hierarchy.txt", "rt") as f:
         data = [line.rstrip() for line in f.readlines()]
@@ -104,9 +102,16 @@ def taxonomic_grouping(depth):
 
 if __name__ == "__main__":
     _, tree = get_hierarchy()
-    assert get_distance(tree, "Neoceratium", "Noctiluca") == 7
-    assert get_distance(tree, "Noctiluca", "Tomopteridae") == 2
-    assert get_distance(tree, "Limacidae", "egg__other") == 1
+    # assert get_distance(tree, "Neoceratium", "Noctiluca") == 7
+    # assert get_distance(tree, "Noctiluca", "Tomopteridae") == 2
+    # assert get_distance(tree, "Limacidae", "egg__other") == 1
+
+    distances = []
+    for i in range(39):
+        for j in range(i, 40):
+            distances.append(taxonomic_distance(i, j))
+
+    avg = sum(distances)/len(distances)
 
     for i in range(10):
         test = taxonomic_grouping(i)

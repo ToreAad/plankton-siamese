@@ -65,7 +65,7 @@ def std_triplet_loss(alpha=5):
 
     return myloss
 
-def hierarchy_triplet_loss(alpha=10):
+def hierarchy_triplet_loss(alpha=5):
     """
     Basic triplet loss.
     Note, due to the K.maximum, this learns nothing when dneg>dpos+alpha
@@ -77,8 +77,7 @@ def hierarchy_triplet_loss(alpha=10):
         neg = y_pred[:, C.out_dim*2:C.out_dim*3]
         pos_dist = K.sum(K.square(anchor-pos), axis=1)
         neg_dist = K.sum(K.square(anchor-neg), axis=1)
-        basic_loss = pos_dist - neg_dist + (alpha/y_true)
-        loss = K.maximum(basic_loss, 0.0)
+        loss = pos_dist - alpha*K.abs(y_true - neg_dist)
         return loss
     return myloss
 
@@ -122,9 +121,10 @@ def train_hierarchy_siamese_model(model, train_generator, val_generator, loss_fu
             ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=3, verbose=1),
             EarlyStopping(monitor='val_loss', patience=10, verbose=1)
         ],
-        validation_data=val_generator,)
+        validation_data=val_generator)
 
     return history
+
 
 def hierarchy_main():
     bitvector_model = initialize_bitvector_model()
@@ -134,7 +134,7 @@ def hierarchy_main():
     val_generator = HierarchyTriplet(
         batch_size=C.siamese_batch_size, directory=C.val_dir, steps_per_epoch=C.siamese_validation_steps)
     train_hierarchy_siamese_model(
-        siamese_model, train_generator, val_generator, lambda : hierarchy_triplet_loss(10))
+        siamese_model, train_generator, val_generator, hierarchy_triplet_loss)
     freeze(bitvector_model).save(model_path("hierachy_bitvector_"+C.base_model))
 
 def main():
