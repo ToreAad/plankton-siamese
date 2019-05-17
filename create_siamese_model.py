@@ -135,7 +135,7 @@ def hierarchy_main():
         batch_size=C.siamese_batch_size, directory=C.val_dir, steps_per_epoch=C.siamese_validation_steps)
     train_hierarchy_siamese_model(
         siamese_model, train_generator, val_generator, hierarchy_triplet_loss)
-    freeze(bitvector_model).save(model_path("hierachy_bitvector2_"+C.base_model))
+    freeze(bitvector_model).save(model_path("hierachy_bitvector3_"+C.base_model))
 
 def main():
     bitvector_model = initialize_bitvector_model()

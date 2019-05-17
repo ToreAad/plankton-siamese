@@ -31,18 +31,18 @@ def get_path(tree, a, path):
 
 
 def get_distance(tree, a, b):
-    # Following defintion of taxonomic distance given in:
-    # http://www.coastalwiki.org/wiki/Measurements_of_biodiversity
     path_to_a = []
     get_path(tree, a, path_to_a)
     path_to_b = []
     get_path(tree, b, path_to_b)
 
-    for i, (p1, p2) in enumerate(zip(path_to_a, path_to_b)):
+    depth = 0
+    for p1, p2 in zip(path_to_a, path_to_b):
         if p1 != p2:
-            return len(path_to_a) + len(path_to_b) - 2*i
+            break
+        depth += 1
     
-    return abs(len(path_to_a) - len(path_to_b))
+    return 13-depth
     
 
 def get_hierarchy():
@@ -81,21 +81,10 @@ def get_grouping(tree, target_depth):
     return parents, children
 
 _, tree = get_hierarchy()
-td = {}
-for i in range(39):
-    for j in range(i, 40):
-        a = plankton_int2str[i]
-        b = plankton_int2str[j]
-        d = get_distance(tree, a, b)
-        td[(i,j)] = d
-        td[(j,i)] = d
-max_distance = max(td.values())
-
 def taxonomic_distance(a, b):
-    return td[(a,b)]/max_distance
-
-def taxonomic_ordering(b):
-    return get_distance(tree, "egg__other", b)/max_distance
+    a = plankton_int2str[a]
+    b = plankton_int2str[b]
+    return get_distance(tree, a, b)
 
 def taxonomic_grouping(depth):
     parents, _ = get_grouping(tree, depth)
@@ -127,7 +116,10 @@ def dfs(tree, dic, counter):
     
     return counter
 
-
+def get_taxonomic_ordering():
+    dic = {}
+    counter = dfs(tree, dic, 0)
+    return counter, dic
     
 
 if __name__ == "__main__":
@@ -139,8 +131,7 @@ if __name__ == "__main__":
     distances = []
     for i in range(39):
         for j in range(i, 40):
-            d = taxonomic_distance(i, j)
-            distances.append(d)
+            distances.append(taxonomic_distance(i, j))
 
     avg = sum(distances)/len(distances)
 
