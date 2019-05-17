@@ -77,7 +77,7 @@ def hierarchy_triplet_loss(alpha=5):
         neg = y_pred[:, C.out_dim*2:C.out_dim*3]
         pos_dist = K.sum(K.square(anchor-pos), axis=1)
         neg_dist = K.sum(K.square(anchor-neg), axis=1)
-        loss = pos_dist + alpha*K.abs(y_true - neg_dist)
+        loss = pos_dist + K.abs(y_true - neg_dist)
         return loss
     return hierarchyLoss
 
@@ -118,7 +118,7 @@ def train_hierarchy_siamese_model(model, train_generator, val_generator, loss_fu
         epochs=C.siamese_epochs,
         callbacks=[
             CSVLogger("history_siamese_"+C.base_model),
-            ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=1, verbose=1),
+            ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=3, verbose=1),
             EarlyStopping(monitor='val_loss', patience=5, verbose=1)
         ],
         validation_data=val_generator)
@@ -135,7 +135,7 @@ def hierarchy_main():
         batch_size=C.siamese_batch_size, directory=C.val_dir, steps_per_epoch=C.siamese_validation_steps)
     train_hierarchy_siamese_model(
         siamese_model, train_generator, val_generator, hierarchy_triplet_loss)
-    freeze(bitvector_model).save(model_path("hierachy_bitvector_"+C.base_model))
+    freeze(bitvector_model).save(model_path("hierachy_bitvector2_"+C.base_model))
 
 def main():
     bitvector_model = initialize_bitvector_model()
