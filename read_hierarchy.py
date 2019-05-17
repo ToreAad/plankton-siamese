@@ -98,6 +98,28 @@ def taxonomic_grouping(depth):
             counter += 1
         int_parents[plankton_str2int[key]] = (get_count[val], val)
     return int_parents
+
+def taxonomic_path(a):
+    a = plankton_int2str[a]
+    path = []
+    get_path(tree, a, path)
+    return path
+
+def dfs(tree, dic, counter):
+    node, children = tree
+    
+    dic[node] = counter
+    counter += 1
+    
+    for child in children:
+        counter = dfs(child, dic, counter)
+    
+    return counter
+
+def get_taxonomic_ordering():
+    dic = {}
+    counter = dfs(tree, dic, 0)
+    return counter, dic
     
 
 if __name__ == "__main__":
