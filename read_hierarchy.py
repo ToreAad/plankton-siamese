@@ -87,13 +87,16 @@ for i in range(39):
         a = plankton_int2str[i]
         b = plankton_int2str[j]
         d = get_distance(tree, a, b)
-        td[(a,b)] = d
+        td[(i,j)] = d
+        td[(j,i)] = d
 max_distance = max(td.values())
 
-def taxonomic_distance(a_, b_):
-    a = plankton_int2str[a_]
-    b = plankton_int2str[b_]
+def taxonomic_distance(a, b):
     return td[(a,b)]/max_distance
+
+def taxonomic_ordering(b):
+    a = plankton_str2int["egg__other"]
+    return taxonomic_distance(a, b)
 
 def taxonomic_grouping(depth):
     parents, _ = get_grouping(tree, depth)
@@ -125,10 +128,7 @@ def dfs(tree, dic, counter):
     
     return counter
 
-def get_taxonomic_ordering():
-    dic = {}
-    counter = dfs(tree, dic, 0)
-    return counter, dic
+
     
 
 if __name__ == "__main__":
