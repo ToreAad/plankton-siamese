@@ -95,8 +95,7 @@ def taxonomic_distance(a, b):
     return td[(a,b)]/max_distance
 
 def taxonomic_ordering(b):
-    a = plankton_str2int["egg__other"]
-    return taxonomic_distance(a, b)
+    return get_distance(tree, "egg__other", b)/max_distance
 
 def taxonomic_grouping(depth):
     parents, _ = get_grouping(tree, depth)
