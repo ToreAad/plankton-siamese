@@ -77,7 +77,7 @@ def hierarchy_triplet_loss(alpha=5):
         neg = y_pred[:, C.out_dim*2:C.out_dim*3]
         pos_dist = K.sum(K.square(anchor-pos), axis=1)
         neg_dist = K.sum(K.square(anchor-neg), axis=1)
-        loss = pos_dist + K.abs(y_true - neg_dist)
+        loss = pos_dist + alpha*K.abs(y_true - neg_dist)
         return loss
     return hierarchyLoss
 
@@ -111,7 +111,7 @@ def train_siamese_model(model, train_generator, val_generator, loss_function=std
 def train_hierarchy_siamese_model(model, train_generator, val_generator, loss_function=std_triplet_loss):
     print("Starting to train")
     model.compile(optimizer=SGD(lr=C.learn_rate, momentum=0.9),
-                  loss=loss_function(), metrics=[std_triplet_loss()])
+                  loss=loss_function(), metrics=[std_triplet_loss(5*0.0555)])
 
     history = model.fit_generator(
         train_generator,
