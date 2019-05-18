@@ -14,7 +14,6 @@ from tensorflow.keras.utils import Sequence
 
 from read_hierarchy import taxonomic_distance
 
-
 # from image_cache import toRedis, fromRedis
 import config as C
 
@@ -177,7 +176,8 @@ class Singlet(Sequence):
             self.paste(blank_img, image)
         return (np.asarray(images), np.asarray(labels))
 
-
+																	
+		
 class Triplet(Singlet):
     def __getitem__(self, idx):
         a_img = np.ones((self.batch_size, *C.in_dim))
@@ -189,7 +189,8 @@ class Triplet(Singlet):
             neg_class = random.randint(0, len(self.classes)-2)
             if neg_class >= pos_class:
                 neg_class = neg_class + 1
-            
+                
+
             a_random_choice = random.randint(0, len(self.images[pos_class])-1)
             p_random_choice = random.randint(0, len(self.images[pos_class])-1)
             n_random_choice = random.randint(0, len(self.images[neg_class])-1)
@@ -211,16 +212,21 @@ class Triplet(Singlet):
 
 
 class HierarchyTriplet(Singlet):
-    def contract_class(self):
+    def __getitem__(self, idx):
         a_img = np.ones((self.batch_size, *C.in_dim))
         p_img = np.ones((self.batch_size, *C.in_dim))
         n_img = np.ones((self.batch_size, *C.in_dim))
         distances = []
         for j in range(self.batch_size):
-            pos_class = random.randint(0, len(self.classes)-1)
-            neg_class = random.randint(0, len(self.classes)-2)
-            if neg_class >= pos_class:
-                neg_class = neg_class + 1
+            while True:
+                pos_class = random.randint(0, len(self.classes)-1)
+                neg_class = random.randint(0, len(self.classes)-2)
+                if neg_class >= pos_class:
+                    neg_class = neg_class + 1
+                    
+                if C.plankton_int2str[pos_class] not in ["egg__other", "multiple__other"] and \
+                   C.plankton_int2str[neg_class] not in ["egg__other", "multiple__other"]:
+                   break
             
             a_random_choice = random.randint(0, len(self.images[pos_class])-1)
             p_random_choice = random.randint(0, len(self.images[pos_class])-1)
@@ -241,72 +247,6 @@ class HierarchyTriplet(Singlet):
             
         return( [a_img, p_img, n_img], np.asarray(distances))
     
-    def contract_supclass(self):
-        a_img = np.ones((self.batch_size, *C.in_dim))
-        p_img = np.ones((self.batch_size, *C.in_dim))
-        n_img = np.ones((self.batch_size, *C.in_dim))
-        distances = []
-        for j in range(self.batch_size):
-            while True:
-                a_class = random.randint(0, len(self.classes)-1)
-                b_class = random.randint(0, len(self.classes)-1)
-                c_class = random.randint(0, len(self.classes)-2)
-                
-                if a_class == b_class and a_class == c_class:
-                    c_class += 1
-                
-                d_ab = taxonomic_distance(a_class, b_class)
-                d_bc = taxonomic_distance(b_class, c_class)
-                d_ac = taxonomic_distance(a_class, c_class)
-
-                max_distance = min([d_ab, d_bc, d_ac])
-                min_distance = max([d_ab, d_bc, d_ac])
-
-                if d_ab == d_bc and d_ab == d_ac:
-                    an_class = a_class
-                    pos_class = b_class
-                    neg_class = c_class
-                else:
-                    if d_ab == min_distance:
-                        an_class = a_class
-                        pos_class = b_class
-                        neg_class = c_class
-                    elif d_bc == min_distance:
-                        an_class = b_class
-                        pos_class = c_class
-                        neg_class = a_class
-                    elif d_ac == min_distance:
-                        an_class = a_class
-                        pos_class = c_class
-                        neg_class = b_class
-                    break
-            
-            a_random_choice = random.randint(0, len(self.images[an_class])-1)
-            p_random_choice = random.randint(0, len(self.images[pos_class])-1)
-            n_random_choice = random.randint(0, len(self.images[neg_class])-1)
-
-            a_image_path = self.images[an_class][a_random_choice]
-            p_image_path = self.images[pos_class][p_random_choice]
-            n_image_path = self.images[neg_class][n_random_choice]
-
-            a_image = self.get_image(a_image_path)
-            p_image = self.get_image(p_image_path)
-            n_image = self.get_image(n_image_path)
-
-            self.paste(a_img[j], a_image)
-            self.paste(p_img[j], p_image)
-            self.paste(n_img[j], n_image)
-            distances.append(max_distance)
-            
-        return( [a_img, p_img, n_img], np.asarray(distances))
-
-    def __getitem__(self, idx):
-        return self.contract_class()
-        #return self.contract_supclass()
-        # if np.random.random_sample() < 0.5:
-        #     return self.contract_class()
-        # else:
-        #     return self.contract_supclass()
 
 
 # Testing:

@@ -95,7 +95,7 @@ def taxonomic_distance(a, b):
     return td[(a,b)]/max_distance
 
 def taxonomic_ordering(b):
-    return get_distance(tree, "egg__other", b)/max_distance
+    return get_distance(tree, "eudoxie__Diphyidae", b)/max_distance
 
 def taxonomic_grouping(depth):
     parents, _ = get_grouping(tree, depth)
