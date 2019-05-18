@@ -3,7 +3,7 @@ train_dir = 'train'
 val_dir = 'validate'
 test_dir = 'test'
 in_dim = (299, 299, 1)
-out_dim = 64
+out_dim = 128
 n_classes = 40
 
 # Base network parameters
