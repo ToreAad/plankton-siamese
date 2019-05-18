@@ -75,8 +75,8 @@ def hierarchy_triplet_loss(alpha=5):
         anchor = y_pred[:, 0:C.out_dim]
         pos = y_pred[:, C.out_dim:C.out_dim*2]
         neg = y_pred[:, C.out_dim*2:C.out_dim*3]
-        pos_dist = K.sum(K.square(anchor-pos), axis=1)
-        neg_dist = K.sum(K.square(anchor-neg), axis=1)
+        pos_dist = K.sqrt(K.sum(K.square(anchor-pos), axis=1))
+        neg_dist = K.sqrt(K.sum(K.square(anchor-neg), axis=1))
         loss = pos_dist + alpha*K.abs(y_true - neg_dist)
         return loss
     return hierarchyLoss
