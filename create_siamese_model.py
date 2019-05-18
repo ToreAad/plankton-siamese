@@ -111,13 +111,13 @@ def train_siamese_model(model, train_generator, val_generator, loss_function=std
 def train_hierarchy_siamese_model(model, train_generator, val_generator, loss_function=std_triplet_loss):
     print("Starting to train")
     model.compile(optimizer=SGD(lr=C.learn_rate, momentum=0.9),
-                  loss=loss_function(), metrics=[std_triplet_loss(5*0.0555)])
+                  loss=loss_function())
 
     history = model.fit_generator(
         train_generator,
         epochs=C.siamese_epochs,
         callbacks=[
-            CSVLogger("history_siamese_"+C.base_model),
+            CSVLogger("history_hierarchy_siamese_"+C.base_model),
             ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=3, verbose=1),
             EarlyStopping(monitor='val_loss', patience=5, verbose=1)
         ],
@@ -135,7 +135,7 @@ def hierarchy_main():
         batch_size=C.siamese_batch_size, directory=C.val_dir, steps_per_epoch=C.siamese_validation_steps)
     train_hierarchy_siamese_model(
         siamese_model, train_generator, val_generator, hierarchy_triplet_loss)
-    freeze(bitvector_model).save(model_path("hierachy_bitvector3_"+C.base_model))
+    freeze(bitvector_model).save(model_path("hierachy_bitvector_"+C.base_model))
 
 def main():
     bitvector_model = initialize_bitvector_model()
