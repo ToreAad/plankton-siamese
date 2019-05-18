@@ -65,7 +65,7 @@ def std_triplet_loss(alpha=5):
 
     return myloss
 
-def hierarchy_triplet_loss(alpha=5):
+def hierarchy_triplet_loss(alpha=1):
     """
     Basic triplet loss.
     Note, due to the K.maximum, this learns nothing when dneg>dpos+alpha
