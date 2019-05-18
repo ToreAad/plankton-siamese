@@ -20,7 +20,7 @@ siamese_steps_per_epoch = 1000
 siamese_validation_steps = 100
 siamese_epochs = 5
 logfile = 'train.log'
-learn_rate = 0.01
+learn_rate = 0.1
 lr_decay = 0.9
 last = 0
 

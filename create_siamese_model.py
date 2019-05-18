@@ -66,7 +66,7 @@ def std_triplet_loss(alpha=5):
     return myloss
 
 
-def hierarchy_triplet_loss(alpha=1):
+def hierarchy_triplet_loss(alpha=0.5):
     """
 
     """

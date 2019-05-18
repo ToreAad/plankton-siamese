@@ -145,6 +145,9 @@ if __name__ == "__main__":
             d = taxonomic_distance(i, j)
             distances.append(d)
 
+    import matplotlib.pyplot as plt
+    plt.hist(distances, bins=100)
+    plt.show()
     avg = sum(distances)/len(distances)
 
     for i in range(10):
